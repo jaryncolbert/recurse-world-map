@@ -5,17 +5,18 @@
   "author": "Jaryn Colbert <jaryn.colbert@gmail.com>",
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "bootstrap": "^3.3.7",
+    "bootstrap": "^3.4.1",
     "immutable": "^3.8.2",
     "jdu": "^1.0.0",
+    "leaflet": "^1.5.1",
     "moment": "^2.24.0",
     "react": "^16.8.6",
     "react-bootstrap": "^0.32.4",
     "react-dom": "^16.8.6",
     "react-redux": "^6.0.1",
-    "react-scripts": "^2.1.8",
+    "react-scripts": "^3.0.1",
     "redux": "^4.0.1",
-    "typescript": "^3.4.2"
+    "typescript": "^3.5.1"
   },
   "scripts": {
     "start": "react-scripts start",
