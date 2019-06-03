@@ -15,22 +15,20 @@ CREATE TABLE IF NOT EXISTS people (
 CREATE TABLE IF NOT EXISTS locations (
   location_id INTEGER PRIMARY KEY,
   name TEXT,
-  short_name TEXT,
-  type TEXT
+  short_name TEXT
 );
 
-CREATE TABLE IF NOT EXISTS cities (
+CREATE TABLE IF NOT EXISTS locations_geo (
   location_id INTEGER NULL REFERENCES locations (location_id),
   name TEXT NOT NULL,
-  subdivision_name TEXT,
-  country_name TEXT NOT NULL
+  type TEXT NOT NULL,
+  subdivision_derived TEXT,
+  subdivision_code TEXT,
+  country_name TEXT NOT NULL,
+  country_code TEXT NOT NULL,
+  lat TEXT NOT NULL,
+  lng TEXT NOT NULL
 );
-
-CREATE TABLE IF NOT EXISTS countries (
-  location_id INTEGER NULL REFERENCES locations (location_id),
-  name TEXT NOT NULL
-);
-
 
 CREATE TABLE IF NOT EXISTS location_affiliations (
   person_id INTEGER NOT NULL REFERENCES people (person_id),

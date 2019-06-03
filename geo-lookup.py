@@ -8,12 +8,15 @@ opens a transaction, deletes the current data (if any), and inserts the new
 data. The database schema must already exist.
 '''
 
+import time
 import argparse
 import json
 import logging
 import psycopg2
 import sys
-from geopy.geocoders import Nominatim, GeoNames
+import geopy.geocoders
+from geopy.geocoders import GeoNames
+from geopy.exc import GeocoderTimedOut
 
 def getEnvVar(var_name, fallback = ""):
     value = os.getenv(var_name) or fallback
@@ -26,16 +29,57 @@ def getEnvVar(var_name, fallback = ""):
     logging.info(var_name + ": " + value)
     return value
 
+def delete_data(cursor):
+    cursor.execute('DELETE FROM locations_geo')
+
+def replace_data(database_url):
+    connection = psycopg2.connect(database_url)
+    cursor = connection.cursor()
+
+    delete_data(cursor)
+    logging.info('Deleted existing tables')
+    insert_data(cursor)
+    logging.info('Completed database update')
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+def insert_data(cursor):
+    for location in get_locations_from_db(cursor):
+        geo = get_geolocation(location)
+        insert_geolocation(cursor, geo)
+
+def get_locations_from_db(cursor):
+    """Returns all stored locations from the database."""
+    cursor.execute("""SELECT
+                        location_id,
+                        name
+                      FROM locations
+                      ORDER BY location_id""")
+    return [{
+        'location_id': x[0],
+        'name': x[1],
+    } for x in cursor.fetchall()]
+
+geolocator = GeoNames(username=***REMOVED***)
+geopy.geocoders.options.default_timeout = None
 def lookup_geonames(location_name):
-    username = ***REMOVED***
-    geolocator = GeoNames(username=username)
-    geolocation = geolocator.geocode(location_name)
-    print("GeoNames: ", geolocation.raw)
+    time.sleep(1.5) # Slow down requests to avoid timeout (< 1/sec)
+    try_count = 0
 
-    return geolocation
+    try:
+        return geolocator.geocode(location_name).raw
+    except GeocoderTimedOut as e:
+        if try_count > 10:      # max tries
+            raise e
 
-def enhance_location(location):
-    location_id = location.get('id')
+        try_count += 1
+        time.sleep(1.5)
+        return geolocator.geocode(location_name).raw
+
+def get_geolocation(location):
+    location_id = location.get('location_id')
     name = location.get('name').strip()
 
     parts = name.split(", ")
@@ -46,109 +90,57 @@ def enhance_location(location):
     country = parts[0] if (type == "country") else ("United States" if (isUsCity) else parts[1])
 
     geolocation = lookup_geonames(name)
-
-    enhanced = {
+    geo = {
         'location_id': location_id,
         'name': name,
         'type': type,
         'subdivision_derived': subdivision,
-        'subdivision_code': geolocation.adminCode1 if geolocation.adminCode1 != "00" else "",
-        'country_name': country_name,
-        'country_code': geolocation.countryCode,
-        'lat': geolocation.lat,
-        'long': geolocation.lng,
+        'subdivision_code': geolocation['adminCode1'] if type == "city" else "",
+        'country_name': country,
+        'country_code': geolocation['countryCode'],
+        'lat': geolocation['lat'],
+        'lng': geolocation['lng'],
         }
 
-    return enhanced
+    return geo
 
-def update_location(cursor, location):
-    logging.debug("Location #{}: {} ({}), {}".format(
-        location_id,
-        name,
-        location.get('short_name'),
-        type
+def insert_geolocation(cursor, location):
+    logging.debug("GeoLocation #{}: {} ({}), SubDiv: {} ({}), Country: {} ({}), ({},{})".format(
+        location.get('location_id'),
+        location.get('name'),
+        location.get('type'),
+        location.get('subdivision_derived'),
+        location.get('subdivision_code'),
+        location.get('country_name'),
+        location.get('country_code'),
+        location.get('lat'),
+        location.get('lng'),
     ))
-    cursor.execute("INSERT INTO locations" +
-                   " (location_id, name, short_name, type)" +
-                   " VALUES (%s, %s, %s, %s)",
-                   [location_id,
-                    name,
-                    location.get('short_name'),
-                    type
+    cursor.execute("INSERT INTO locations_geo" +
+                   " (location_id, name, type," +
+                   " subdivision_derived, subdivision_code," +
+                   " country_name, country_code, lat, lng)" +
+                   " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                   [location.get('location_id'),
+                   location.get('name'),
+                   location.get('type'),
+                   location.get('subdivision_derived'),
+                   location.get('subdivision_code'),
+                   location.get('country_name'),
+                   location.get('country_code'),
+                   location.get('lat'),
+                   location.get('lng'),
                    ]
                   )
-
-    if (type == "city"):
-        cursor.execute("INSERT INTO cities" +
-                       " (location_id, name, subdivision_name, country_name)" +
-                       " VALUES (%s, %s, %s, %s)",
-                       [location_id,
-                        parts[0],
-                        subdivision,
-                        country
-                       ]
-                      )
-
-        if (country not in country_names):
-            country_names.add(country)
-            cursor.execute("INSERT INTO countries" +
-                           " (name)" +
-                           " VALUES (%s)",
-                           [ country ]
-                          )
-    else:
-        country_names.add(name)
-        cursor.execute("INSERT INTO countries" +
-                       " (location_id, name)" +
-                       " VALUES (%s, %s)",
-                       [location_id,
-                        name
-                       ]
-                      )
-
-def get_location_from_db(cursor, location):
-    """Returns the stint type, name, and duration for each stint in which the current
-    user participated."""
-    cursor.execute("""SELECT
-                        stints.stint_type,
-                        stints.start_date,
-                        stints.end_date,
-                        stints.title,
-                        batches.short_name
-                      FROM stints
-                      LEFT JOIN batches
-                        ON stints.batch_id = batches.batch_id
-                      WHERE stints.person_id = %s
-                      ORDER BY stints.start_date""",
-                   [user])
-    return [x for x in cursor.fetchall()]
-
-
-def main(database_url, token):
-    logging.info('Starting World Map geolocation service...')
-
-    brooklyn = {
-        'location_id': 21726,
-        'name': 'Brooklyn, NY'
-        }
-    uk = {
-        'location_id': 84,
-        'name': 'United Kingdom'
-        }
-    print("Looking up ", brooklyn['name'])
-    lookup_geonames(brooklyn['name'])
-    print("Looking up ", uk['name'])
-    lookup_geonames(uk['name'])
 
 if __name__ == "__main__":
     import os
     from dotenv import load_dotenv
 
     load_dotenv()
-
     logging.basicConfig(level=logging.INFO)
-
     database_url = getEnvVar('DATABASE_URL')
-    token = getEnvVar('RC_API_ACCESS_TOKEN')
 
-    main(database_url, token)
+    logging.info('Starting World Map geolocation update...')
+    replace_data(database_url)
+    logging.info('Geolocation completed.')

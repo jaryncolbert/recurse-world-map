@@ -64,8 +64,6 @@ def replace_data(database_url, people):
     connection.close()
 
 def delete_data(cursor):
-    cursor.execute('DELETE FROM countries')
-    cursor.execute('DELETE FROM cities')
     cursor.execute('DELETE FROM location_affiliations')
     cursor.execute('DELETE FROM locations')
     cursor.execute('DELETE FROM stints')
@@ -106,14 +104,14 @@ def insert_data(cursor, people):
                 processed_locations.add(location_id)
                 logging.debug("Location #{}: {} ({})".format(
                     location_id,
-                    name,
+                    location.get('name'),
                     location.get('short_name')
                 ))
                 cursor.execute("INSERT INTO locations" +
                                " (location_id, name, short_name)" +
                                " VALUES (%s, %s, %s)",
                                [location_id,
-                                name,
+                                location.get('name'),
                                 location.get('short_name')
                                ]
                               )
