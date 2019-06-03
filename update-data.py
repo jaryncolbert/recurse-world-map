@@ -19,8 +19,6 @@ import psycopg2
 import requests
 import sys
 
-"http://api.geonames.org/search?q=brooklyn&name_equals=brooklyn&maxRows=10&username=jaryncolbert&featureClass=P"
-
 def getEnvVar(var_name, fallback = ""):
     value = os.getenv(var_name) or fallback
     if not value:
@@ -105,8 +103,20 @@ def insert_data(cursor, people):
             location_id = location.get('id')
 
             if (location_id not in processed_locations):
-                process_location(cursor, location)
                 processed_locations.add(location_id)
+                logging.debug("Location #{}: {} ({})".format(
+                    location_id,
+                    name,
+                    location.get('short_name')
+                ))
+                cursor.execute("INSERT INTO locations" +
+                               " (location_id, name, short_name)" +
+                               " VALUES (%s, %s, %s)",
+                               [location_id,
+                                name,
+                                location.get('short_name')
+                               ]
+                              )
 
 
             cursor.execute("INSERT INTO location_affiliations" +
@@ -162,63 +172,6 @@ def insert_data(cursor, people):
     logging.info('Inserted %s people', len(people))
     logging.info('Inserted %s batches', len(processed_batches))
     logging.info('Inserted %s locations', len(processed_locations))
-
-def process_location(cursor, location):
-    location_id = location.get('id')
-    name = location.get('name').strip()
-    country_names = set()
-
-    parts = name.split(", ")
-    type = "country" if (len(parts) == 1) else "city"
-    isUsCity = (type == "city" and len(parts[1]) == 2)
-    # US cities are formatted <city>, <ST> where <ST> is the two-letter state code
-    subdivision = parts[1] if (isUsCity) else ""
-    country = parts[0] if (type == "country") else ("United States" if (isUsCity) else parts[1])
-
-    logging.debug("Location #{}: {} ({}), {}".format(
-        location_id,
-        name,
-        location.get('short_name'),
-        type
-    ))
-    cursor.execute("INSERT INTO locations" +
-                   " (location_id, name, short_name, type)" +
-                   " VALUES (%s, %s, %s, %s)",
-                   [location_id,
-                    name,
-                    location.get('short_name'),
-                    type
-                   ]
-                  )
-
-    if (type == "city"):
-        cursor.execute("INSERT INTO cities" +
-                       " (location_id, name, subdivision_name, country_name)" +
-                       " VALUES (%s, %s, %s, %s)",
-                       [location_id,
-                        parts[0],
-                        subdivision,
-                        country
-                       ]
-                      )
-
-        if (country not in country_names):
-            country_names.add(country)
-            cursor.execute("INSERT INTO countries" +
-                           " (name)" +
-                           " VALUES (%s)",
-                           [ country ]
-                          )
-    else:
-        country_names.add(name)
-        cursor.execute("INSERT INTO countries" +
-                       " (location_id, name)" +
-                       " VALUES (%s, %s)",
-                       [location_id,
-                        name
-                       ]
-                      )
-
 
 def main(database_url, token):
     logging.info('Starting World Map database update...')
