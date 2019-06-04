@@ -1,5 +1,5 @@
 import React from "react";
-import { Map, TileLayer, Marker, type Viewport } from "react-leaflet";
+import { Map, TileLayer, Marker, Popup, type Viewport } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 
 import { getLocations } from "./api";
@@ -15,7 +15,7 @@ const DEFAULT_VIEWPORT = {
 export default class LeafletMap extends React.Component {
   state = {
     viewport: DEFAULT_VIEWPORT,
-    locations: []
+    locations: [],
   };
 
   componentDidMount() {
@@ -26,9 +26,7 @@ export default class LeafletMap extends React.Component {
         locationList.push(result[i]);
       }
 
-      this.setState({
-        locations: locationList
-      });
+      this.setState({ locations: locationList });
     });
   }
 
@@ -57,7 +55,9 @@ export default class LeafletMap extends React.Component {
             <Marker
               key={loc["location_id"]}
               position={[parseFloat(loc["lat"]), parseFloat(loc["lng"])]}
-            />
+            >
+              <Popup><span>{loc["name"]}</span></Popup>
+            </Marker>
           ))}
         </MarkerClusterGroup>
       </Map>
