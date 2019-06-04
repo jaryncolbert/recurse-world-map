@@ -46,9 +46,19 @@ def replace_data(database_url):
     connection.close()
 
 def insert_data(cursor):
-    for location in get_locations_from_db(cursor):
-        geo = get_geolocation(location)
-        insert_geolocation(cursor, geo)
+    logging.info('Beginning database update')
+    locations = get_locations_from_db(cursor)
+    logging.info('Retrieved %s locations', len(locations))
+    logging.info('Adding geolocation data... (this will take a few minutes)')
+
+    for location in locations:
+        parsed = parse_location(location)
+        result = geonames_query(parsed)
+        geo = add_geonames_result(parsed, result)
+        insert_geo_data(cursor, geo)
+
+    logging.info('Inserted %s locations', len(locations))
+
 
 def get_locations_from_db(cursor):
     """Returns all stored locations from the database."""
@@ -64,47 +74,68 @@ def get_locations_from_db(cursor):
 
 geolocator = GeoNames(username=***REMOVED***)
 geopy.geocoders.options.default_timeout = None
-def lookup_geonames(location_name):
-    time.sleep(1.5) # Slow down requests to avoid timeout (< 1/sec)
+def geonames_query(location):
+    time.sleep(2) # Slow down requests to avoid timeout (< 1/sec)
     try_count = 0
 
+    # Enhance query with all named parts of location, if present
+    query = location["base_name"]
+    if (location["state_name"]):
+        query = query + " " + location["state_name"]
+    if (location["type"] == "city"):
+        query = query + " " + location["country_name"]
+
     try:
-        return geolocator.geocode(location_name).raw
+        return geolocator.geocode(query).raw
     except GeocoderTimedOut as e:
         if try_count > 10:      # max tries
             raise e
 
         try_count += 1
-        time.sleep(1.5)
-        return geolocator.geocode(location_name).raw
+        time.sleep(2.5)
+        return geolocator.geocode(query).raw
 
-def get_geolocation(location):
+def get_state_name(state_code):
+    usStates = {}
+    with open('src/usStates.json') as json_file:
+        usStates = json.load(json_file)
+
+    return usStates[state_code]
+
+def parse_location(location):
     location_id = location.get('location_id')
     name = location.get('name').strip()
 
     parts = name.split(", ")
+    base_name = parts[0]
     type = "country" if (len(parts) == 1) else "city"
     isUsCity = (type == "city" and len(parts[1]) == 2)
     # US cities are formatted <city>, <ST> where <ST> is the two-letter state code
-    subdivision = parts[1] if (isUsCity) else ""
+    state_name = get_state_name(parts[1]) if (isUsCity) else ""
     country = parts[0] if (type == "country") else ("United States" if (isUsCity) else parts[1])
-
-    geolocation = lookup_geonames(name)
-    geo = {
+    return {
         'location_id': location_id,
-        'name': name,
+        'full_name': name,
+        'base_name': base_name,
         'type': type,
-        'subdivision_derived': subdivision,
-        'subdivision_code': geolocation['adminCode1'] if type == "city" else "",
+        'state_name': state_name,
         'country_name': country,
-        'country_code': geolocation['countryCode'],
-        'lat': geolocation['lat'],
-        'lng': geolocation['lng'],
-        }
+    }
 
-    return geo
+def add_geonames_result(parsed_location, geonames_result):
+    return {
+        'location_id': parsed_location['location_id'],
+        'name': parsed_location['full_name'],
+        'type': parsed_location['type'],
+        'subdivision_derived': parsed_location['state_name'],
+        'subdivision_code': geonames_result['adminCode1'] if type == "city" else "",
+        'country_name': parsed_location['country_name'],
+        'country_code': geonames_result['countryCode'],
+        'lat': geonames_result['lat'],
+        'lng': geonames_result['lng'],
+    }
 
-def insert_geolocation(cursor, location):
+def insert_geo_data(cursor, location):
     logging.debug("GeoLocation #{}: {} ({}), SubDiv: {} ({}), Country: {} ({}), ({},{})".format(
         location.get('location_id'),
         location.get('name'),
@@ -138,7 +169,7 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
 
     load_dotenv()
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     database_url = getEnvVar('DATABASE_URL')
 
     logging.info('Starting World Map geolocation update...')
