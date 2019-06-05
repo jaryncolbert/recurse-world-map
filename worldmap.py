@@ -1,5 +1,5 @@
 """
-Recurse Faces back-end
+Recurse World Map back-end
 """
 
 # Copyright (C) 2017 Jason Owen <jason.a.owen@gmail.com>
@@ -17,7 +17,7 @@ Recurse Faces back-end
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from functools import wraps
+from itertools import groupby
 import logging
 import os
 from flask import Flask, jsonify, redirect, request, send_from_directory, session, url_for
@@ -58,6 +58,29 @@ def static_file(path):
     "Get the single-page app assets"
     return send_from_directory('build/static', path)
 
+def group_people_by_location(locations):
+    grouped_locations = []
+
+    # Use common location info as grouping key
+    for location_key, group in groupby(locations, lambda loc: {
+        "location_id": loc["location_id"],
+        "location_name": loc["location_name"],
+        "lat": loc["lat"],
+        "lng": loc["lng"],
+    }):
+        # Join all person information into a list for each location
+        person_list = [{
+            "person_id": location["person_id"],
+            "first_name": location["first_name"],
+            "last_name": location["last_name"],
+            "image_url": location["image_url"],
+        } for location in group]
+
+        location_key["person_list"] = person_list
+        grouped_locations.append(location_key)
+
+    return grouped_locations
+
 @app.route('/api/locations/all')
 def get_all_location_data():
     cursor = connection.cursor()
@@ -65,17 +88,26 @@ def get_all_location_data():
     """Returns the entire set of geolocation data in the database."""
     cursor.execute("""SELECT
                         location_id,
-                        name,
+                        location_name,
                         lat,
-                        lng
-                      FROM geolocations
+                        lng,
+                        person_id,
+                        first_name,
+                        last_name,
+                        image_url
+                      FROM geolocations_with_affiliated_people
                       ORDER BY location_id""")
     locations = [{
         'location_id': x[0],
-        'name': x[1],
+        'location_name': x[1],
         'lat': x[2],
         'lng': x[3],
+        'person_id': x[4],
+        'first_name': x[5],
+        'last_name': x[6],
+        'image_url': x[7]
     } for x in cursor.fetchall()]
     cursor.close()
 
-    return jsonify(locations)
+    grouped = group_people_by_location(locations)
+    return jsonify(grouped)

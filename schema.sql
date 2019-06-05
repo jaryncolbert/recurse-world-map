@@ -48,3 +48,20 @@ CREATE TABLE IF NOT EXISTS stints (
   title TEXT,
   PRIMARY KEY (person_id, start_date)
 );
+
+CREATE VIEW geolocations_with_affiliated_people AS
+SELECT
+  l.location_id,
+  l.name as location_name,
+  l.lat,
+  l.lng,
+  p.person_id,
+  p.first_name,
+  p.last_name,
+  p.image_url
+FROM geolocations l
+  INNER JOIN location_affiliations a
+    ON (a.location_id = l.location_id)
+  INNER JOIN people p
+    ON a.person_id = p.person_id
+ORDER BY l.location_id;

@@ -53,7 +53,7 @@ export default class LeafletMap extends React.Component {
         />
         <MarkerClusterGroup>
           {this.state.locations.map(loc => (
-            <LocationMarker location={loc} />
+            <LocationMarker key={loc["location_id"]} location={loc} />
           ))}
         </MarkerClusterGroup>
       </Map>

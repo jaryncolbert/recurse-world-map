@@ -30,7 +30,8 @@ def getEnvVar(var_name, fallback = ""):
     return value
 
 def delete_data(cursor):
-    cursor.execute('DELETE FROM locations_geo')
+    cursor.execute('DELETE VIEW geolocations_with_affiliated_people')
+    cursor.execute('DELETE FROM geolocations')
 
 def replace_data(database_url):
     connection = psycopg2.connect(database_url)
@@ -147,7 +148,7 @@ def insert_geo_data(cursor, location):
         location.get('lat'),
         location.get('lng'),
     ))
-    cursor.execute("INSERT INTO locations_geo" +
+    cursor.execute("INSERT INTO geolocations" +
                    " (location_id, name, type," +
                    " subdivision_derived, subdivision_code," +
                    " country_name, country_code, lat, lng)" +
