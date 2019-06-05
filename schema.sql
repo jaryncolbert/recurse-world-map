@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS locations (
   short_name TEXT
 );
 
-CREATE TABLE IF NOT EXISTS locations_geo (
+CREATE TABLE IF NOT EXISTS geolocations (
   location_id INTEGER NULL REFERENCES locations (location_id),
   name TEXT NOT NULL,
   type TEXT NOT NULL,

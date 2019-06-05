@@ -68,7 +68,7 @@ def get_all_location_data():
                         name,
                         lat,
                         lng
-                      FROM locations_geo
+                      FROM geolocations
                       ORDER BY location_id""")
     locations = [{
         'location_id': x[0],
