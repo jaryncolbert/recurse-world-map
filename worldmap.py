@@ -76,7 +76,8 @@ def group_people_by_location(locations):
             "image_url": location["image_url"],
         } for location in group]
 
-        location_key["person_list"] = person_list
+        sorted_list = sorted(person_list, key=lambda p: p["first_name"])
+        location_key["person_list"] = sorted_list
         grouped_locations.append(location_key)
 
     return grouped_locations
