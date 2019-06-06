@@ -37,7 +37,6 @@ export default class LeafletMap extends React.Component {
   render() {
     return (
       <Map
-        onClick
         onViewportChanged={this.onViewportChanged}
         viewport={this.state.viewport}
         zoomSnap="0.2"
