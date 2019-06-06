@@ -10,3 +10,12 @@ h1, h2, p {
   width: 100%;
   margin: 0 auto;
 }
+.circle-icon {
+  width: 20px;
+  height: 20px;
+  background: #0000ff; /* color of the circle */
+  border-radius: 50%; /* make the div a circular shape */
+  box-shadow: 4px 4px 3px grey; /* see http://www.w3schools.com/css/css3_shadows.asp */
+  -moz-box-shadow: 4px 4px 3px grey;
+  -webkit-box-shadow: 4px 4px 3px grey;
+}

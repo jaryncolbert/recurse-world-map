@@ -1,9 +1,8 @@
 import React from "react";
 import { Map, TileLayer, type Viewport } from "react-leaflet";
-import MarkerClusterGroup from "react-leaflet-markercluster";
 
 import { getLocations } from "./api";
-import LocationMarker from "./LocationMarker";
+import LocationClusterGroup from "./LocationClusterGroup";
 
 import "react-leaflet-markercluster/dist/styles.min.css";
 import "./map.css";
@@ -47,11 +46,7 @@ export default class LeafletMap extends React.Component {
           attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MarkerClusterGroup>
-          {this.state.locations.map(loc => (
-            <LocationMarker key={loc["location_id"]} location={loc} />
-          ))}
-        </MarkerClusterGroup>
+        <LocationClusterGroup locations={this.state.locations}/>
       </Map>
     );
   }
