@@ -27,9 +27,13 @@ const getPropsForSize = size => {
       radius: 70,
       class: "lg"
     },
-    5000: {
+    300: {
       radius: 90,
       class: "xl"
+    },
+    5000: {
+      radius: 110,
+      class: "xxl"
     }
   };
   // Find the first key that is greater than the original size

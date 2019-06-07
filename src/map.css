@@ -60,3 +60,22 @@ p {
 	width: 80px;
 	height: 80px;
 }
+
+.circle-cluster-xxl div {
+	width: 100px;
+	height: 100px;
+}
+
+.circle-icon-md div,
+.circle-cluster-md div,
+.circle-icon-lg div,
+.circle-cluster-lg div {
+  font-size: 14px;
+}
+
+.circle-icon-xl div,
+.circle-cluster-xl div,
+.circle-icon-xxl div,
+.circle-cluster-xxl div {
+  font-size: 18px;
+}
