@@ -50,6 +50,6 @@ const circleIcon = (radius, text) => {
     iconAnchor: [radius/2, radius/2],
     popupAnchor: [0, 0],
     shadowSize: [0, 0],
-    className: "circle-icon",
+    className: "circle-icon size-" + radius,
   });
 };

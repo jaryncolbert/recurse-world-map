@@ -46,7 +46,7 @@ export default class LeafletMap extends React.Component {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <LocationClusterGroup
-          maxClusterRadius="35"
+          maxClusterRadius="45"
           locations={this.state.locations}
         />
       </Map>

@@ -28,14 +28,30 @@ p {
   align-items: center; /* align vertical */
 }
 
-.marker-cluster {
+.circle-cluster {
   background-color: rgba(169, 169, 169, 0.6);
+  border-radius: 50%;
 }
 
-.marker-cluster div {
+.circle-cluster div {
   background-color: rgba(128, 128, 128, 0.6);
   border-radius: 50%;
   display: flex;
   justify-content: center; /* align horizontal */
   align-items: center; /* align vertical */
+}
+
+.circle-cluster-small div {
+	width: 20px;
+	height: 20px;
+}
+
+.circle-cluster-medium div {
+	width: 40px;
+	height: 40px;
+}
+
+.circle-cluster-large div {
+	width: 60px;
+	height: 60px;
 }
