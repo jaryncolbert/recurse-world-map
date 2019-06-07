@@ -12,16 +12,29 @@ p {
   width: 100%;
   margin: 0 auto;
 }
+
 .circle-icon {
   background: #5aba47; /* color of the circle, RC logo green */
   border-radius: 50%; /* make the div a circular shape */
   box-shadow: 4px 4px 3px grey; /* see http://www.w3schools.com/css/css3_shadows.asp */
   -moz-box-shadow: 4px 4px 3px grey;
   -webkit-box-shadow: 4px 4px 3px grey;
-  opacity: .85;
+  opacity: 0.85;
   color: #ffffff;
   font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-weight: bold;
+  display: flex;
+  justify-content: center; /* align horizontal */
+  align-items: center; /* align vertical */
+}
+
+.marker-cluster {
+  background-color: rgba(169, 169, 169, 0.6);
+}
+
+.marker-cluster div {
+  background-color: rgba(128, 128, 128, 0.6);
+  border-radius: 50%;
   display: flex;
   justify-content: center; /* align horizontal */
   align-items: center; /* align vertical */

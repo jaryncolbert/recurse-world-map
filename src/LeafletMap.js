@@ -8,7 +8,7 @@ import "react-leaflet-markercluster/dist/styles.min.css";
 import "./map.css";
 
 const DEFAULT_VIEWPORT = {
-  center: [6.662966, 7.690188],
+  center: [3.846042, 11.502213], //Yaounde, Cameroon
   zoom: 2.7
 };
 
@@ -45,7 +45,10 @@ export default class LeafletMap extends React.Component {
           attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <LocationClusterGroup locations={this.state.locations}/>
+        <LocationClusterGroup
+          maxClusterRadius="35"
+          locations={this.state.locations}
+        />
       </Map>
     );
   }

@@ -26,11 +26,11 @@ export default function LocationMarker({ location }) {
 /* Use approx fibonacci seq to scale sizes of markers */
 const getRadius = size => {
   const popToRadius = {
-    1: 15,
-    2: 25,
-    5: 35,
-    10: 45,
-    20: 60,
+    1: 20,
+    2: 30,
+    5: 40,
+    10: 50,
+    20: 65,
     50: 80,
     100: 150,
     200: 250,
