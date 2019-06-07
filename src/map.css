@@ -41,17 +41,22 @@ p {
   align-items: center; /* align vertical */
 }
 
-.circle-cluster-small div {
-	width: 20px;
-	height: 20px;
+.circle-cluster-sm div {
+	width: 30px;
+	height: 30px;
 }
 
-.circle-cluster-medium div {
+.circle-cluster-md div {
 	width: 40px;
 	height: 40px;
 }
 
-.circle-cluster-large div {
+.circle-cluster-lg div {
 	width: 60px;
 	height: 60px;
+}
+
+.circle-cluster-xl div {
+	width: 80px;
+	height: 80px;
 }

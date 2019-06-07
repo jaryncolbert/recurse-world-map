@@ -6,13 +6,15 @@ import LocationPopup from "./LocationPopup";
 
 export default function LocationMarker({ location }) {
   const people = location["person_list"];
-  const radius = getRadius(people.length);
+  const population = people.length;
+  const radius = getRadius(population);
 
   return (
     <Marker
       position={[parseFloat(location["lat"]), parseFloat(location["lng"])]}
       className="location-marker"
-      icon={circleIcon(radius, people.length.toString())}
+      population={population}
+      icon={circleIcon(radius, population.toString())}
     >
       <LocationPopup
         key={location["location_id"]}
@@ -28,7 +30,7 @@ const getRadius = size => {
   const popToRadius = {
     1: 20,
     2: 30,
-    5: 40,
+    5: 35,
     10: 50,
     20: 65,
     50: 80,

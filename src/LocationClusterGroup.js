@@ -16,16 +16,20 @@ export default function LocationClusterGroup({ locations, ...otherProps }) {
 const getPropsForSize = size => {
   const numToRadius = {
     10: {
-      radius: 30,
-      class: "small"
+      radius: 40,
+      class: "sm"
     },
     20: {
       radius: 50,
-      class: "medium"
+      class: "md"
+    },
+    100: {
+      radius: 70,
+      class: "lg"
     },
     5000: {
-      radius: 70,
-      class: "large"
+      radius: 90,
+      class: "xl"
     }
   };
   // Find the first key that is greater than the original size
@@ -34,11 +38,18 @@ const getPropsForSize = size => {
 };
 
 const clusterGroup = cluster => {
-  const count = cluster.getChildCount();
-  const props = getPropsForSize(count);
+  const markers = cluster.getAllChildMarkers();
+  const totalPopulation = markers.reduce((sum, marker) => {
+    if (marker.options.hasOwnProperty("population")) {
+      sum += marker.options.population;
+    }
+    return sum;
+  }, 0);
+
+  const props = getPropsForSize(totalPopulation);
 
   return L.divIcon({
-    html: `<div><span>${count}</span></div>`,
+    html: `<div><span>${totalPopulation}</span></div>`,
     iconSize: [props["radius"], props["radius"]],
     iconAnchor: [props["radius"] / 2, props["radius"] / 2],
     popupAnchor: [0, 0],
