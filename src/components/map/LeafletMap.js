@@ -1,11 +1,11 @@
 import React from "react";
 import { Map, TileLayer, type Viewport } from "react-leaflet";
 
-import { getLocations } from "./api";
+import { getLocations } from "../../api";
 import LocationClusterGroup from "./LocationClusterGroup";
 
 import "react-leaflet-markercluster/dist/styles.min.css";
-import "./map.css";
+import "../../css/map.css";
 
 const DEFAULT_VIEWPORT = {
   center: [3.846042, 11.502213], //Yaounde, Cameroon

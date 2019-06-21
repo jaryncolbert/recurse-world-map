@@ -1,5 +1,5 @@
 import React from "react";
-import LeafletMap from "./LeafletMap";
+import LeafletMap from "./map/LeafletMap";
 
 function App() {
   return (
