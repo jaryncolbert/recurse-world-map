@@ -2,7 +2,7 @@
 Recurse World Map back-end
 """
 
-# Copyright (C) 2017 Jason Owen <jason.a.owen@gmail.com>
+# Copyright (C) 2019 Jaryn Colbert <jaryn.colbert@gmail.com>
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -20,6 +20,7 @@ Recurse World Map back-end
 from itertools import groupby
 import logging
 import os
+import requests
 from flask import Flask, jsonify, redirect, request, send_from_directory, session, url_for
 from authlib.flask.client import OAuth
 from werkzeug.exceptions import HTTPException
@@ -29,16 +30,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def getEnvVar(var_name, fallback = ""):
+
+def getEnvVar(var_name, fallback=""):
     value = os.getenv(var_name) or fallback
     if not value:
         logging.error(f"''{var_name}'' value not found.",
-            " Ensure a .env or .flaskenv file is present",
-            " with this environment variable set.")
+                      " Ensure a .env or .flaskenv file is present",
+                      " with this environment variable set.")
         sys.exit()
 
     logging.info(var_name + ": " + value)
     return value
+
 
 # pylint: disable=invalid-name
 app = Flask(__name__, static_url_path='/build')
@@ -48,15 +51,18 @@ logging.basicConfig(level=logging.INFO)
 
 connection = psycopg2.connect(getEnvVar('DATABASE_URL'))
 
+
 @app.route('/')
 def index():
     "Get the single-page app HTML"
     return send_from_directory('build', 'index.html')
 
+
 @app.route('/static/<path:path>')
 def static_file(path):
     "Get the single-page app assets"
     return send_from_directory('build/static', path)
+
 
 def group_people_by_location(locations):
     grouped_locations = []
@@ -81,6 +87,7 @@ def group_people_by_location(locations):
         grouped_locations.append(location_key)
 
     return grouped_locations
+
 
 @app.route('/api/locations/all')
 def get_all_location_data():
@@ -112,3 +119,26 @@ def get_all_location_data():
 
     grouped = group_people_by_location(locations)
     return jsonify(grouped)
+
+
+token = getEnvVar('RC_API_ACCESS_TOKEN')
+
+
+@app.route('/api/locations/search')
+def suggest_locations_from_query():
+    suggestions = []
+    q = request.args.get('query')
+
+    if (q == ""):
+        return jsonify(suggestions)
+
+    headers = {'Authorization': f'Bearer {token}'}
+    url = 'https://www.recurse.com/api/v1/locations?limit={limit}&query={query}'
+    limit = 10
+
+    r = requests.get(url.format(
+        limit=limit, query=q), headers=headers)
+    if r.status_code != requests.codes.ok:
+        r.raise_for_status()
+    suggestions = r.json()
+    return jsonify(suggestions)

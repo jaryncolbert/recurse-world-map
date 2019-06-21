@@ -19,16 +19,18 @@ import psycopg2
 import requests
 import sys
 
-def getEnvVar(var_name, fallback = ""):
+
+def getEnvVar(var_name, fallback=""):
     value = os.getenv(var_name) or fallback
     if not value:
         logging.error(f"''{var_name}'' value not found.",
-            " Ensure a .env or .flaskenv file is present",
-            " with this environment variable set.")
+                      " Ensure a .env or .flaskenv file is present",
+                      " with this environment variable set.")
         sys.exit()
 
     logging.info(var_name + ": " + value)
     return value
+
 
 def get_people(token):
     people = []
@@ -39,7 +41,8 @@ def get_people(token):
     offset = 0
 
     while True:
-        r = requests.get(url.format(limit=limit, offset=offset), headers=headers)
+        r = requests.get(url.format(
+            limit=limit, offset=offset), headers=headers)
         if r.status_code != requests.codes.ok:
             r.raise_for_status()
         page = r.json()
@@ -49,6 +52,7 @@ def get_people(token):
         offset += limit
 
     return people
+
 
 def replace_data(database_url, people):
     connection = psycopg2.connect(database_url)
@@ -63,12 +67,14 @@ def replace_data(database_url, people):
     cursor.close()
     connection.close()
 
+
 def delete_data(cursor):
     cursor.execute('DELETE FROM location_affiliations')
     cursor.execute('DELETE FROM locations')
     cursor.execute('DELETE FROM stints')
     cursor.execute('DELETE FROM people')
     cursor.execute('DELETE FROM batches')
+
 
 def insert_data(cursor, people):
     processed_batches = set()
@@ -93,8 +99,8 @@ def insert_data(cursor, people):
                         person.get('middle_name'),
                         person.get('last_name'),
                         person.get('image_path')
-                       ]
-                      )
+                        ]
+                       )
 
         location = person.get('current_location')
         if (location):
@@ -113,17 +119,16 @@ def insert_data(cursor, people):
                                [location_id,
                                 location.get('name'),
                                 location.get('short_name')
-                               ]
-                              )
-
+                                ]
+                               )
 
             cursor.execute("INSERT INTO location_affiliations" +
                            " (person_id, location_id)" +
                            " VALUES (%s, %s)",
                            [person_id,
                             location_id
-                           ]
-                          )
+                            ]
+                           )
 
         for stint in person['stints']:
             batch_id = None
@@ -144,8 +149,8 @@ def insert_data(cursor, people):
                                    [batch_id,
                                     batch.get('name'),
                                     batch.get('short_name')
-                                   ]
-                                  )
+                                    ]
+                                   )
                     processed_batches.add(batch_id)
 
             logging.debug("  Stint: {}, Batch: {}, {} - {}".format(
@@ -164,12 +169,13 @@ def insert_data(cursor, people):
                             stint.get('start_date'),
                             stint.get('end_date'),
                             stint.get('title'),
-                           ]
-                          )
+                            ]
+                           )
 
     logging.info('Inserted %s people', len(people))
     logging.info('Inserted %s batches', len(processed_batches))
     logging.info('Inserted %s locations', len(processed_locations))
+
 
 def main(database_url, token):
     logging.info('Starting World Map database update...')
@@ -177,6 +183,7 @@ def main(database_url, token):
     logging.info('Found %s people', len(people))
 
     replace_data(database_url, people)
+
 
 if __name__ == "__main__":
     import os

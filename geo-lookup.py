@@ -18,20 +18,22 @@ import geopy.geocoders
 from geopy.geocoders import GeoNames
 from geopy.exc import GeocoderTimedOut
 
-def getEnvVar(var_name, fallback = ""):
+
+def getEnvVar(var_name, fallback=""):
     value = os.getenv(var_name) or fallback
     if not value:
         logging.error(f"''{var_name}'' value not found.",
-            " Ensure a .env or .flaskenv file is present",
-            " with this environment variable set.")
+                      " Ensure a .env or .flaskenv file is present",
+                      " with this environment variable set.")
         sys.exit()
 
     logging.info(var_name + ": " + value)
     return value
 
+
 def delete_data(cursor):
-    cursor.execute('DELETE VIEW geolocations_with_affiliated_people')
     cursor.execute('DELETE FROM geolocations')
+
 
 def replace_data(database_url):
     connection = psycopg2.connect(database_url)
@@ -45,6 +47,7 @@ def replace_data(database_url):
     connection.commit()
     cursor.close()
     connection.close()
+
 
 def insert_data(cursor):
     logging.info('Beginning database update')
@@ -73,10 +76,13 @@ def get_locations_from_db(cursor):
         'name': x[1],
     } for x in cursor.fetchall()]
 
+
 geolocator = GeoNames(username=***REMOVED***)
 geopy.geocoders.options.default_timeout = None
+
+
 def geonames_query(location):
-    time.sleep(2) # Slow down requests to avoid timeout (< 1/sec)
+    time.sleep(2)  # Slow down requests to avoid timeout (< 1/sec)
     try_count = 0
 
     # Enhance query with all named parts of location, if present
@@ -96,6 +102,7 @@ def geonames_query(location):
         time.sleep(2.5)
         return geolocator.geocode(query).raw
 
+
 def get_state_name(state_code):
     usStates = {}
     with open('src/usStates.json') as json_file:
@@ -103,25 +110,28 @@ def get_state_name(state_code):
 
     return usStates[state_code]
 
+
 def parse_location(location):
     location_id = location.get('location_id')
-    name = location.get('name').strip()
+    name = location.get('name')
 
     parts = name.split(", ")
     base_name = parts[0]
-    type = "country" if (len(parts) == 1) else "city"
-    isUsCity = (type == "city" and len(parts[1]) == 2)
+    loc_type = "country" if (len(parts) == 1) else "city"
+    isUsCity = (loc_type == "city" and len(parts[1]) == 2)
     # US cities are formatted <city>, <ST> where <ST> is the two-letter state code
     state_name = get_state_name(parts[1]) if (isUsCity) else ""
-    country = parts[0] if (type == "country") else ("United States" if (isUsCity) else parts[1])
+    country = parts[0] if (loc_type == "country") else (
+        "United States" if (isUsCity) else parts[1])
     return {
         'location_id': location_id,
         'full_name': name,
         'base_name': base_name,
-        'type': type,
+        'type': loc_type,
         'state_name': state_name,
-        'country_name': country,
+        'country_name': country
     }
+
 
 def add_geonames_result(parsed_location, geonames_result):
     return {
@@ -129,12 +139,13 @@ def add_geonames_result(parsed_location, geonames_result):
         'name': parsed_location['full_name'],
         'type': parsed_location['type'],
         'subdivision_derived': parsed_location['state_name'],
-        'subdivision_code': geonames_result['adminCode1'] if type == "city" else "",
+        'subdivision_code': geonames_result['adminCode1'] if parsed_location['type'] == "city" else "",
         'country_name': parsed_location['country_name'],
         'country_code': geonames_result['countryCode'],
         'lat': geonames_result['lat'],
         'lng': geonames_result['lng'],
     }
+
 
 def insert_geo_data(cursor, location):
     logging.debug("GeoLocation #{}: {} ({}), SubDiv: {} ({}), Country: {} ({}), ({},{})".format(
@@ -154,16 +165,17 @@ def insert_geo_data(cursor, location):
                    " country_name, country_code, lat, lng)" +
                    " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
                    [location.get('location_id'),
-                   location.get('name'),
-                   location.get('type'),
-                   location.get('subdivision_derived'),
-                   location.get('subdivision_code'),
-                   location.get('country_name'),
-                   location.get('country_code'),
-                   location.get('lat'),
-                   location.get('lng'),
-                   ]
-                  )
+                    location.get('name'),
+                    location.get('type'),
+                    location.get('subdivision_derived'),
+                    location.get('subdivision_code'),
+                    location.get('country_name'),
+                    location.get('country_code'),
+                    location.get('lat'),
+                    location.get('lng'),
+                    ]
+                   )
+
 
 if __name__ == "__main__":
     import os

@@ -136,3 +136,7 @@ pg_dump*.sql
 # Vim .sqp files
 *.swp
 *.env
+
+.psql_history
+.vscode
+*.code-workspace

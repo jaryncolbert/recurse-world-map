@@ -1,81 +1,84 @@
 body {
-  padding-bottom: 30px;
+    padding-bottom: 30px;
 }
 h1,
 h2,
 p {
-  font-family: sans-serif;
-  text-align: center;
+    font-family: sans-serif;
+    text-align: center;
 }
 .leaflet-container {
-  height: 1000px;
-  width: 100%;
-  margin: 0 auto;
+    height: 1000px;
+    width: 100%;
+    margin: 0 auto;
+    z-index: 10;
+    top: 60px;
+    left: 0px;
 }
 
 .circle-icon {
-  background: #5aba47; /* color of the circle, RC logo green */
-  border-radius: 50%; /* make the div a circular shape */
-  box-shadow: 4px 4px 3px grey; /* see http://www.w3schools.com/css/css3_shadows.asp */
-  -moz-box-shadow: 4px 4px 3px grey;
-  -webkit-box-shadow: 4px 4px 3px grey;
-  opacity: 0.85;
-  color: #ffffff;
-  font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
-  font-weight: bold;
-  display: flex;
-  justify-content: center; /* align horizontal */
-  align-items: center; /* align vertical */
+    background: #5aba47; /* color of the circle, RC logo green */
+    border-radius: 50%; /* make the div a circular shape */
+    box-shadow: 4px 4px 3px grey; /* see http://www.w3schools.com/css/css3_shadows.asp */
+    -moz-box-shadow: 4px 4px 3px grey;
+    -webkit-box-shadow: 4px 4px 3px grey;
+    opacity: 0.85;
+    color: #ffffff;
+    font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    display: flex;
+    justify-content: center; /* align horizontal */
+    align-items: center; /* align vertical */
 }
 
 .circle-cluster {
-  background-color: rgba(169, 169, 169, 0.6);
-  border-radius: 50%;
+    background-color: rgba(169, 169, 169, 0.6);
+    border-radius: 50%;
 }
 
 .circle-cluster div {
-  background-color: rgba(128, 128, 128, 0.6);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center; /* align horizontal */
-  align-items: center; /* align vertical */
+    background-color: rgba(128, 128, 128, 0.6);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center; /* align horizontal */
+    align-items: center; /* align vertical */
 }
 
 .circle-cluster-sm div {
-	width: 30px;
-	height: 30px;
+    width: 30px;
+    height: 30px;
 }
 
 .circle-cluster-md div {
-	width: 40px;
-	height: 40px;
+    width: 40px;
+    height: 40px;
 }
 
 .circle-cluster-lg div {
-	width: 60px;
-	height: 60px;
+    width: 60px;
+    height: 60px;
 }
 
 .circle-cluster-xl div {
-	width: 80px;
-	height: 80px;
+    width: 80px;
+    height: 80px;
 }
 
 .circle-cluster-xxl div {
-	width: 100px;
-	height: 100px;
+    width: 100px;
+    height: 100px;
 }
 
 .circle-icon-md div,
 .circle-cluster-md div,
 .circle-icon-lg div,
 .circle-cluster-lg div {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 .circle-icon-xl div,
 .circle-cluster-xl div,
 .circle-icon-xxl div,
 .circle-cluster-xxl div {
-  font-size: 18px;
+    font-size: 18px;
 }
