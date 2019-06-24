@@ -64,12 +64,15 @@ export default class Search extends React.Component {
         });
     };
 
-    onSuggestionSelected = (event, { suggestionValue }) => {
+    onSuggestionSelected = (event, { suggestion, suggestionValue }) => {
         this.setState({
             value: suggestionValue,
             query: "",
             suggestions: []
         });
+
+        // Call callback fn with value of selected location
+        this.props.onSearchCompleted(suggestion);
     };
 
     getSuggestionValue = suggestion => {

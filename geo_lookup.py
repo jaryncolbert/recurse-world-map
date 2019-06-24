@@ -56,15 +56,23 @@ def insert_data(cursor):
     logging.info('Adding geolocation data... (this will take a few minutes)')
 
     for location in locations:
-        parsed = parse_location(location)
-        result = geonames_query(parsed)
-        geo = add_geonames_result(parsed, result)
-        insert_geo_data(cursor, geo)
+        lookup_and_insert_geodata(cursor, location)
 
     logging.info('Inserted %s locations', len(locations))
 
 
+def lookup_and_insert_geodata(cursor, location):
+    parsed = parse_location(location)
+    result = geonames_query(parsed)
+    geo = add_geonames_result(parsed, result)
+    insert_geo_data(cursor, geo)
+
+    return geo
+
+
 def get_locations_from_db(cursor):
+    logging.debug("Select: Retrieving all Locations")
+
     """Returns all stored locations from the database."""
     cursor.execute("""SELECT
                         location_id,
@@ -112,7 +120,8 @@ def get_state_name(state_code):
 
 
 def parse_location(location):
-    location_id = location.get('location_id')
+    location_id = location.get('location_id') if location.get(
+        'location_id') else location.get('id')
     name = location.get('name')
 
     parts = name.split(", ")
@@ -148,7 +157,7 @@ def add_geonames_result(parsed_location, geonames_result):
 
 
 def insert_geo_data(cursor, location):
-    logging.debug("GeoLocation #{}: {} ({}), SubDiv: {} ({}), Country: {} ({}), ({},{})".format(
+    logging.debug("Insert GeoLocation #{}: {} ({}), SubDiv: {} ({}), Country: {} ({}), ({},{})".format(
         location.get('location_id'),
         location.get('name'),
         location.get('type'),
@@ -182,7 +191,7 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
 
     load_dotenv()
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     database_url = getEnvVar('DATABASE_URL')
 
     logging.info('Starting World Map geolocation update...')

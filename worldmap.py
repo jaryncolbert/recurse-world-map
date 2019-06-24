@@ -27,6 +27,7 @@ from werkzeug.exceptions import HTTPException
 import psycopg2
 import sys
 from dotenv import load_dotenv
+from geo_lookup import lookup_and_insert_geodata
 
 load_dotenv()
 
@@ -90,7 +91,7 @@ def group_people_by_location(locations):
 
 
 @app.route('/api/locations/all')
-def get_all_location_data():
+def get_all_locations():
     cursor = connection.cursor()
 
     """Returns the entire set of geolocation data in the database."""
@@ -125,7 +126,7 @@ token = getEnvVar('RC_API_ACCESS_TOKEN')
 
 
 @app.route('/api/locations/search')
-def suggest_locations_from_query():
+def locations_search():
     suggestions = []
     q = request.args.get('query')
 
@@ -142,3 +143,131 @@ def suggest_locations_from_query():
         r.raise_for_status()
     suggestions = r.json()
     return jsonify(suggestions)
+
+
+@app.route('/api/locations/<int:id>')
+def get_location(id):
+
+    cursor = connection.cursor()
+
+    # If location exists with people affiliated, return it
+    location = get_geolocation_with_people(cursor, id)
+    if (location):
+        return jsonify(location)
+
+    # Else lookup geolocation info, and then return it
+    location = get_geolocation(cursor, id)
+    if (location):
+        return jsonify(location)
+
+    location_name = request.args.get('name')
+    if (location_name == ""):
+        return jsonify({})
+
+    # Otherwise geolocate by name, insert it into DB, and then return it
+    location = {
+        "id": id,
+        "name": location_name,
+        "short_name": request.args.get('short_name'),
+        "type": request.args.get('type')
+    }
+
+    # Insert location into 'locations' table
+    insert_location(cursor, location)
+    connection.commit()
+
+    # Geocode location and insert into 'geolocations' table
+    lookup_and_insert_geodata(cursor, location)
+    connection.commit()
+
+    # Get new geolocation data from DB
+    location = get_geolocation(cursor, id)
+    cursor.close()
+
+    return jsonify(location)
+
+
+def insert_location(cursor, location):
+    logging.info("Insert Location #{}: {} ({})".format(
+        location.get('id'),
+        location.get('name'),
+        location.get('short_name')
+    ))
+    cursor.execute("INSERT INTO locations" +
+                   " (location_id, name, short_name)" +
+                   " VALUES (%s, %s, %s)",
+                   [location.get('id'),
+                    location.get('name'),
+                    location.get('short_name')
+                    ]
+                   )
+
+
+def get_geolocation(cursor, location_id):
+
+    logging.info("Select Location By ID #{}".format(
+        location_id
+    ))
+    """Returns the requested geolocation data for a location with the given idea."""
+    cursor.execute("""SELECT
+                        location_id,
+                        name,
+                        lat,
+                        lng
+                      FROM geolocations
+                      WHERE location_id = %s""", [location_id])
+    locations = [{
+        'location_id': x[0],
+        'location_name': x[1],
+        'lat': x[2],
+        'lng': x[3]
+    } for x in cursor.fetchall()]
+
+    if (len(locations) == 0):
+        return {}
+    if (len(locations) == 1):
+        locations[0]["person_list"] = []
+        return locations[0]
+
+    # Otherwise, throw error - Result should be <= 1
+    raise ValueError("Multiple locations returned for id " + id)
+
+
+def get_geolocation_with_people(cursor, location_id):
+
+    logging.info("Select Location By ID #{}".format(
+        location_id
+    ))
+    """Returns the requested geolocation data for a location with the given idea."""
+    cursor.execute("""SELECT
+                        location_id,
+                        location_name,
+                        lat,
+                        lng,
+                        person_id,
+                        first_name,
+                        last_name,
+                        image_url
+                      FROM geolocations_with_affiliated_people
+                      WHERE location_id = %s
+                      ORDER BY location_id""", [location_id])
+    locations = [{
+        'location_id': x[0],
+        'location_name': x[1],
+        'lat': x[2],
+        'lng': x[3],
+        'person_id': x[4],
+        'first_name': x[5],
+        'last_name': x[6],
+        'image_url': x[7]
+    } for x in cursor.fetchall()]
+
+    grouped = group_people_by_location(locations)
+
+    if (len(grouped) == 0):
+        return {}
+    if (len(grouped) == 1):
+        return grouped[0]
+
+    # Otherwise, throw error - Result should be <= 1
+    raise ValueError("Multiple locations returned for id " + id)
