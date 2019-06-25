@@ -6,14 +6,19 @@ import { Popup } from "react-leaflet";
  */
 export default function LocationPopup({ locationName, people }) {
     const population = people.length;
-    const recursers = population > 1 ? "Recursers" : "Recurser";
+    const recursers = population === 1 ? "Recurser" : "Recursers";
 
     return (
         <Popup key={locationName} maxHeight="200">
             <div className="location-popup">
                 <p className="location_name">{locationName}</p>
                 <p className="location_stats">{population + " " + recursers}</p>
-                <PeopleData people={people} />
+
+                {population === 0 ? (
+                    <NoPeople />
+                ) : (
+                    <PeopleData people={people} />
+                )}
             </div>
         </Popup>
     );
@@ -26,6 +31,14 @@ function PeopleData({ people }) {
                 <Person key={p["person_id"]} person={p} />
             ))}
         </ul>
+    );
+}
+
+function NoPeople() {
+    return (
+        <span className="empty_person_list">
+            No RCers are currently in this location.
+        </span>
     );
 }
 

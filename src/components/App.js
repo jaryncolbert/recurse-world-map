@@ -5,8 +5,16 @@ import Search from "./search/Search";
 import { getLocations, getLocationData } from "../api";
 
 export default class App extends React.Component {
+    DEFAULT_VIEWPORT = {
+        center: [3.846042, 11.502213], //Yaounde, Cameroon
+        zoom: 2.7
+    };
+
     state = {
-        locations: []
+        locations: [],
+        viewport: this.DEFAULT_VIEWPORT,
+        targetLocation: "",
+        selected: ""
     };
 
     componentDidMount() {
@@ -21,11 +29,14 @@ export default class App extends React.Component {
                 locationList.push(result[i]);
             }
 
-            this.setState({ locations: locationList });
+            this.setState({
+                locations: locationList,
+                viewport: this.DEFAULT_VIEWPORT
+            });
         });
     };
 
-    findLocationBounds = location => {
+    zoomToLocation = location => {
         getLocationData(location).then(result => {
             if (!result["location_id"]) {
                 throw Error(
@@ -33,17 +44,45 @@ export default class App extends React.Component {
                         location["id"]
                     } ${location["name"]}`
                 );
+            } else {
+                const newLocations = this.state.locations.slice();
+                if (
+                    !result["person_list"] ||
+                    result["person_list"].length == 0
+                ) {
+                    newLocations.push(result);
+                }
+                this.setState({
+                    locations: newLocations,
+                    targetLocation: result["location_id"],
+                    viewport: {
+                        center: [result["lat"], result["lng"]],
+                        zoom: 9
+                    }
+                });
             }
+        });
+    };
 
-            this.setState({ locations: [result] });
+    setSelected = () => {
+        this.setState({
+            selected: this.state.targetLocation
         });
     };
 
     render() {
         return (
             <div className="App">
-                <Search onSearchCompleted={this.findLocationBounds} />
-                <LeafletMap locations={this.state.locations} />
+                <Search
+                    searchCompletedFn={this.zoomToLocation}
+                    resetFn={this.loadAllLocations}
+                />
+                <LeafletMap
+                    onViewReset={this.setSelected}
+                    locations={this.state.locations}
+                    viewport={this.state.viewport}
+                    selected={this.state.selected}
+                />
             </div>
         );
     }

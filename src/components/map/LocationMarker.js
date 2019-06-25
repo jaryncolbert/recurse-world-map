@@ -4,26 +4,37 @@ import { Marker } from "react-leaflet";
 
 import LocationPopup from "./LocationPopup";
 
-export default function LocationMarker({ location }) {
-    const people = location["person_list"];
-    const population = people.length;
+export default class LocationMarker extends React.Component {
+    render() {
+        const { location, isSelected } = this.props;
 
-    return (
-        <Marker
-            position={[
-                parseFloat(location["lat"]),
-                parseFloat(location["lng"])
-            ]}
-            className="location-marker"
-            population={population}
-            icon={circleIcon(population)}>
-            <LocationPopup
-                key={location["location_id"]}
-                locationName={location["location_name"]}
-                people={people}
-            />
-        </Marker>
-    );
+        const people = location["person_list"];
+        const population = people.length;
+
+        const openPopup = ref => {
+            if (ref) {
+                ref.leafletElement.openPopup();
+            }
+        };
+
+        return (
+            <Marker
+                ref={isSelected && openPopup}
+                position={[
+                    parseFloat(location["lat"]),
+                    parseFloat(location["lng"])
+                ]}
+                className="location-marker"
+                population={population}
+                icon={circleIcon(population)}>
+                <LocationPopup
+                    key={location["location_id"]}
+                    locationName={location["location_name"]}
+                    people={people}
+                />
+            </Marker>
+        );
+    }
 }
 
 /* Use approx fibonacci seq to scale sizes of markers */

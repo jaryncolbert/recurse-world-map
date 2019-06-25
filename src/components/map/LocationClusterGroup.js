@@ -3,12 +3,22 @@ import L from "leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import LocationMarker from "./LocationMarker";
 
-export default function LocationClusterGroup({ locations, ...otherProps }) {
+export default function LocationClusterGroup({
+    locations,
+    selected,
+    ...otherProps
+}) {
     return (
         <MarkerClusterGroup {...otherProps} iconCreateFunction={clusterGroup}>
-            {locations.map(loc => (
-                <LocationMarker key={loc["location_id"]} location={loc} />
-            ))}
+            {locations.map(loc => {
+                return (
+                    <LocationMarker
+                        key={loc["location_id"]}
+                        location={loc}
+                        isSelected={selected === loc["location_id"]}
+                    />
+                );
+            })}
         </MarkerClusterGroup>
     );
 }
