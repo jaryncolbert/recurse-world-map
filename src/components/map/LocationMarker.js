@@ -17,6 +17,10 @@ export default class LocationMarker extends React.Component {
             }
         };
 
+        if (population === 0 && !isSelected) {
+            return null;
+        }
+
         return (
             <Marker
                 ref={isSelected && openPopup}

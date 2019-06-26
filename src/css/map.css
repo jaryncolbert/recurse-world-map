@@ -12,8 +12,9 @@ p {
     width: 100%;
     margin: 0 auto;
     z-index: 10;
-    top: 60px;
+    top: 0px;
     left: 0px;
+    margin-top: 10px;
 }
 
 .circle-icon {
