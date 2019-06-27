@@ -1,0 +1,11 @@
+button {
+    font-size: inherit;
+    font-family: inherit;
+}
+input {
+    font-size: inherit;
+    font-family: inherit;
+}
+html {
+    font-size: calc(1em + 1vw);
+}

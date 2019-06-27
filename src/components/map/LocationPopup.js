@@ -1,6 +1,8 @@
 import React from "react";
 import { Popup } from "react-leaflet";
 
+import "../../css/popup.css";
+
 /* LocationPopup renders the list of affiliated people with a link to their
  * directory entries
  */
@@ -11,8 +13,8 @@ export default function LocationPopup({ locationName, people }) {
     return (
         <Popup key={locationName} maxHeight="200">
             <div className="location-popup">
-                <p className="location_name">{locationName}</p>
-                <p className="location_stats">{population + " " + recursers}</p>
+                <p className="location-name">{locationName}</p>
+                <p className="location-stats">{population + " " + recursers}</p>
 
                 {population === 0 ? (
                     <NoPeople />
@@ -26,17 +28,19 @@ export default function LocationPopup({ locationName, people }) {
 
 function PeopleData({ people }) {
     return (
-        <ul className="person_list">
-            {people.map(p => (
-                <Person key={p["person_id"]} person={p} />
-            ))}
-        </ul>
+        <div className="person-data">
+            <ul className="person-list">
+                {people.map(p => (
+                    <Person key={p["person_id"]} person={p} />
+                ))}
+            </ul>
+        </div>
     );
 }
 
 function NoPeople() {
     return (
-        <span className="empty_person_list">
+        <span className="empty-person-list">
             No RCers are currently in this location.
         </span>
     );

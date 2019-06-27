@@ -1,0 +1,21 @@
+.leaflet-popup-content-wrapper {
+    width: 20vw;
+    max-height: 60vh;
+}
+
+.leaflet-popup-content {
+    flex: auto;
+    font-size: 1vw;
+    max-width: 16vw;
+}
+
+.location-popup .location-name {
+    font-weight: bold;
+    font-size: 1.3vw;
+    text-align: center;
+}
+
+.location-popup .location-stats {
+    font-style: italic;
+    text-align: center;
+}

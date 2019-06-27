@@ -73,6 +73,7 @@ export default class App extends React.Component {
     render() {
         return (
             <div className="App">
+                <h1>World of Recursers</h1>
                 <Search
                     searchCompletedFn={this.zoomToLocation}
                     resetFn={this.loadAllLocations}
