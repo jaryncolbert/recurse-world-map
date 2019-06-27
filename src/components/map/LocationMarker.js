@@ -50,9 +50,9 @@ const getProps = size => {
         10: { radius: 50, class: "sm" },
         20: { radius: 65, class: "lg" },
         50: { radius: 80, class: "lg" },
-        100: { radius: 150, class: "xl" },
-        200: { radius: 250, class: "xl" },
-        400: { radius: 350, class: "xxl" },
+        100: { radius: 90, class: "xl" },
+        200: { radius: 100, class: "xl" },
+        400: { radius: 150, class: "xxl" },
         5000: { radius: 500, class: "xxl" }
     };
     // Find the first key that is greater than the original size
