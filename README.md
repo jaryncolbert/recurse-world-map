@@ -29,6 +29,7 @@ the grey clusters into green markers.
 The search bar at the top allows searching
 for locations by name
 with autosuggest provided by the RC API's locations endpoint.
+
 <img src="./screenshots/london_autosuggest.png?raw=true" alt="RC World Map" width="500"/>
 
 Once a location is selected
@@ -36,6 +37,7 @@ from the search bar,
 the map will pan and zoom to that location
 and display the popup with information
 about Recursers in that location.
+
 <img src="./screenshots/london_results.png?raw=true" alt="RC World Map" width="500"/>
 
 ## Stack
