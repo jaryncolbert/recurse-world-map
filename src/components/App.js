@@ -48,7 +48,7 @@ export default class App extends React.Component {
                 const newLocations = this.state.locations.slice();
                 if (
                     !result["person_list"] ||
-                    result["person_list"].length == 0
+                    result["person_list"].length === 0
                 ) {
                     newLocations.push(result);
                 }

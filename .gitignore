@@ -140,3 +140,4 @@ pg_dump*.sql
 .psql_history
 .vscode
 *.code-workspace
+*.DS_Store

@@ -157,7 +157,7 @@ def add_geonames_result(parsed_location, geonames_result):
 
 
 def insert_geo_data(cursor, location):
-    logging.debug("Insert GeoLocation #{}: {} ({}), SubDiv: {} ({}), Country: {} ({}), ({},{})".format(
+    logging.info("Insert GeoLocation #{}: {} ({}), SubDiv: {} ({}), Country: {} ({}), ({},{})".format(
         location.get('location_id'),
         location.get('name'),
         location.get('type'),
