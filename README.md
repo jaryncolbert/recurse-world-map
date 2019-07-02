@@ -42,6 +42,10 @@ about Recursers in that location.
 
 ## Stack
 
+Initially, this code was ported over  
+from Jason Owens' [Recurse Faces app](https://github.com/jasonaowen/recurse-faces)! 
+Like Faces, its main stack is also mainly Postgresql, Flask, and React.
+
 This app reads Recursers' locations
 from their profiles in the
 [Recurse Center API](https://github.com/recursecenter/wiki/wiki/Recurse-Center-API)
@@ -57,6 +61,8 @@ using [OpenStreetMap](https://www.openstreetmap.org/#map=19/40.65010/-73.94958) 
 ## Local Set Up
 
 The app is comprised of a Flask back-end and a React front-end.
+The instructions below detail 
+how to set up and start both parts of the app.
 
 ### Start the Back End with the RC API
 
