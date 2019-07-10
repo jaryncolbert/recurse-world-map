@@ -18,7 +18,7 @@ export function localFetch(beforeFetchMsg, url, responseMsg) {
         });
 }
 
-export function getLocations() {
+export function getRcLocations() {
     return localFetch(
         "API: Get all geolocation data",
         "/api/locations/all",

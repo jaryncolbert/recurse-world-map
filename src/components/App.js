@@ -2,7 +2,7 @@ import React from "react";
 import LeafletMap from "./map/LeafletMap";
 import Search from "./search/Search";
 
-import { getLocations, getLocationData } from "../api";
+import { getRcLocations, getLocationData } from "../api";
 
 export default class App extends React.Component {
     // Centered on Yaounde, Cameroon
@@ -23,7 +23,7 @@ export default class App extends React.Component {
     }
 
     loadAllLocations = () => {
-        getLocations().then(result => {
+        getRcLocations().then(result => {
             let locationList = [];
             let i;
             for (i in result) {

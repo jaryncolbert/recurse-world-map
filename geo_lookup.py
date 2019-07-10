@@ -17,6 +17,7 @@ import sys
 import geopy.geocoders
 from geopy.geocoders import GeoNames
 from geopy.exc import GeocoderTimedOut
+import os
 
 
 def getEnvVar(var_name, fallback=""):
@@ -85,7 +86,7 @@ def get_locations_from_db(cursor):
     } for x in cursor.fetchall()]
 
 
-geonames_username = getEnvVar(GEONAMES_USERNAME)
+geonames_username = getEnvVar('GEONAMES_USERNAME')
 geolocator = GeoNames(username=geonames_username)
 geopy.geocoders.options.default_timeout = None
 

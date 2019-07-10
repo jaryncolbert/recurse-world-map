@@ -18,6 +18,7 @@ import logging
 import psycopg2
 import requests
 import sys
+import os
 
 
 def getEnvVar(var_name, fallback=""):

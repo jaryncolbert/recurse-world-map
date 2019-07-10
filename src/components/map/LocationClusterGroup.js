@@ -61,9 +61,10 @@ const clusterGroup = cluster => {
     }, 0);
 
     const props = getPropsForSize(totalPopulation);
+    const html = totalPopulation !== 0 ? totalPopulation : "";
 
     return L.divIcon({
-        html: `<div><span>${totalPopulation}</span></div>`,
+        html: `<div><span>${html}</span></div>`,
         iconSize: [props["radius"], props["radius"]],
         iconAnchor: [props["radius"] / 2, props["radius"] / 2],
         popupAnchor: [0, 0],

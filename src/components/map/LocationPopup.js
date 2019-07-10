@@ -6,21 +6,13 @@ import "../../css/popup.css";
 /* LocationPopup renders the list of affiliated people with a link to their
  * directory entries
  */
-export default function LocationPopup({ locationName, people }) {
-    const population = people.length;
-    const recursers = population === 1 ? "Recurser" : "Recursers";
-
+export default function LocationPopup({ locationName, people, hasPeople }) {
     return (
         <Popup key={locationName} maxHeight="200">
             <div className="location-popup">
                 <p className="location-name">{locationName}</p>
-                <p className="location-stats">{population + " " + recursers}</p>
 
-                {population === 0 ? (
-                    <NoPeople />
-                ) : (
-                    <PeopleData people={people} />
-                )}
+                {hasPeople ? <PeopleData people={people} /> : <NoPeople />}
             </div>
         </Popup>
     );
@@ -29,11 +21,7 @@ export default function LocationPopup({ locationName, people }) {
 function PeopleData({ people }) {
     return (
         <div className="person-data">
-            <ul className="person-list">
-                {people.map(p => (
-                    <Person key={p["person_id"]} person={p} />
-                ))}
-            </ul>
+            {people ? <People people={people} /> : <UnspecifiedPeople />}
         </div>
     );
 }
@@ -41,8 +29,32 @@ function PeopleData({ people }) {
 function NoPeople() {
     return (
         <span className="empty-person-list">
-            No RCers are currently in this location.
+            There are currently no RCers at this location.
         </span>
+    );
+}
+
+function UnspecifiedPeople() {
+    return (
+        <span className="unspecified-people">
+            There are RCers at this location. Login for more information!
+        </span>
+    );
+}
+
+function People({ people }) {
+    const population = people.length;
+    const recursers = population === 1 ? "Recurser" : "Recursers";
+
+    return (
+        <>
+            <p className="location-stats">{population + " " + recursers}</p>
+            <ul className="person-list">
+                {people.map(p => (
+                    <Person key={p["person_id"]} person={p} />
+                ))}
+            </ul>
+        </>
     );
 }
 

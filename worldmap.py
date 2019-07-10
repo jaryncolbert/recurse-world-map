@@ -19,6 +19,7 @@ Recurse World Map back-end
 
 from itertools import groupby
 import logging
+from functools import wraps
 import os
 import requests
 from flask import Flask, jsonify, redirect, request, send_from_directory, session, url_for
@@ -50,7 +51,17 @@ app.secret_key = getEnvVar('FLASK_SECRET_KEY', 'development')
 
 logging.basicConfig(level=logging.INFO)
 
+rc = OAuth(app).register(
+    'Recurse Center',
+    api_base_url='https://www.recurse.com/api/v1/',
+    authorize_url='https://www.recurse.com/oauth/authorize',
+    access_token_url='https://www.recurse.com/oauth/token',
+    client_id=getEnvVar('CLIENT_ID'),
+    client_secret=getEnvVar('CLIENT_SECRET'),
+)
+
 connection = psycopg2.connect(getEnvVar('DATABASE_URL'))
+token = getEnvVar('RC_API_ACCESS_TOKEN')
 
 
 @app.route('/')
@@ -65,6 +76,59 @@ def static_file(path):
     return send_from_directory('build/static', path)
 
 
+@app.route('/auth/recurse')
+def auth_recurse_redirect():
+    "Redirect to the Recurse Center OAuth2 endpoint"
+    callback = getEnvVar('CLIENT_CALLBACK')
+    return rc.authorize_redirect(callback)
+
+
+@app.route('/auth/recurse/callback', methods=['GET', 'POST'])
+def auth_recurse_callback():
+    "Process the results of a successful OAuth2 authentication"
+
+    try:
+        token = rc.authorize_access_token()
+    except HTTPException:
+        logging.error(
+            'Error %s parsing OAuth2 response: %s',
+            request.args.get('error', '(no error code)'),
+            request.args.get('error_description', '(no error description'),
+        )
+        return (jsonify({
+            'message': 'Access Denied',
+            'error': request.args.get('error', '(no error code)'),
+            'error_description': request.args.get('error_description', '(no error description'),
+        }), 403)
+
+    me = rc.get('people/me', token=token).json()
+    logging.info("Logged in: %s %s %s",
+                 me.get('first_name', ''),
+                 me.get('middle_name', ''),
+                 me.get('last_name', ''))
+
+    session['recurse_user_id'] = me['id']
+    return redirect(url_for('index'))
+
+
+def needs_authorization(route):
+    """ Use the @needs_authorization annotation to check that a valid session
+    exists for the current user."""
+    @wraps(route)
+    def wrapped_route(*args, **kwargs):
+        """Check the session, or return access denied."""
+        if app.debug:
+            return route(*args, **kwargs)
+        elif 'recurse_user_id' in session:
+            return route(*args, **kwargs)
+        else:
+            return (jsonify({
+                'message': 'Access Denied',
+            }), 403)
+
+    return wrapped_route
+
+
 def group_people_by_location(locations):
     grouped_locations = []
 
@@ -74,6 +138,7 @@ def group_people_by_location(locations):
         "location_name": loc["location_name"],
         "lat": loc["lat"],
         "lng": loc["lng"],
+        "has_rc_people": loc["has_rc_people"]
     }):
         # Join all person information into a list for each location
         person_list = [{
@@ -90,11 +155,44 @@ def group_people_by_location(locations):
     return grouped_locations
 
 
-@app.route('/api/locations/all')
-def get_all_locations():
+# @app.route('/api/locations/all')
+@needs_authorization
+def get_all_rc_locations():
     cursor = connection.cursor()
 
-    """Returns the entire set of geolocation data in the database."""
+    """Returns all locations in the database
+    with their geolocation data."""
+    cursor.execute("""SELECT
+                        location_id,
+                        name,
+                        lat,
+                        lng
+                      FROM geolocations
+                      WHERE EXISTS(
+                          SELECT location_id
+                          FROM location_affiliations
+                          WHERE location_id = geolocations.location_id
+                        )
+                      ORDER BY location_id""")
+    locations = [{
+        'location_id': x[0],
+        'location_name': x[1],
+        'lat': x[2],
+        'lng': x[3],
+        'has_rc_people': True
+    } for x in cursor.fetchall()]
+    cursor.close()
+
+    return jsonify(locations)
+
+
+@app.route('/api/locations/all')
+@needs_authorization
+def get_all_rc_locations_with_people():
+    cursor = connection.cursor()
+
+    """Returns all locations in the database
+    with their geolocation data and all affiliated RC users."""
     cursor.execute("""SELECT
                         location_id,
                         location_name,
@@ -111,6 +209,7 @@ def get_all_locations():
         'location_name': x[1],
         'lat': x[2],
         'lng': x[3],
+        'has_rc_people': True,
         'person_id': x[4],
         'first_name': x[5],
         'last_name': x[6],
@@ -120,9 +219,6 @@ def get_all_locations():
 
     grouped = group_people_by_location(locations)
     return jsonify(grouped)
-
-
-token = getEnvVar('RC_API_ACCESS_TOKEN')
 
 
 @app.route('/api/locations/search')
@@ -139,15 +235,15 @@ def locations_search():
 
     r = requests.get(url.format(
         limit=limit, query=q), headers=headers)
-    if r.status_code != requests.codes.ok:
+    if r.status_code != requests.codes['ok']:
         r.raise_for_status()
     suggestions = r.json()
     return jsonify(suggestions)
 
 
 @app.route('/api/locations/<int:id>')
+@needs_authorization
 def get_location(id):
-
     cursor = connection.cursor()
 
     # If location exists with people affiliated, return it
@@ -204,11 +300,10 @@ def insert_location(cursor, location):
 
 
 def get_geolocation(cursor, location_id):
-
     logging.info("Select Location By ID #{}".format(
         location_id
     ))
-    """Returns the requested geolocation data for a location with the given idea."""
+    """Returns the requested geolocation data for a location with the given id."""
     cursor.execute("""SELECT
                         location_id,
                         name,
@@ -226,7 +321,6 @@ def get_geolocation(cursor, location_id):
     if (len(locations) == 0):
         return {}
     if (len(locations) == 1):
-        locations[0]["person_list"] = []
         return locations[0]
 
     # Otherwise, throw error - Result should be <= 1
@@ -234,7 +328,6 @@ def get_geolocation(cursor, location_id):
 
 
 def get_geolocation_with_people(cursor, location_id):
-
     logging.info("Select Location By ID #{}".format(
         location_id
     ))

@@ -9,7 +9,8 @@ export default class LocationMarker extends React.Component {
         const { location, isSelected } = this.props;
 
         const people = location["person_list"];
-        const population = people.length;
+        const population = people ? people.length : 0;
+        const hasPeople = !!location["has_rc_people"];
 
         const openPopup = ref => {
             if (ref) {
@@ -17,7 +18,7 @@ export default class LocationMarker extends React.Component {
             }
         };
 
-        if (population === 0 && !isSelected) {
+        if (population === 0 && !isSelected && !hasPeople) {
             return null;
         }
 
@@ -35,6 +36,7 @@ export default class LocationMarker extends React.Component {
                     key={location["location_id"]}
                     locationName={location["location_name"]}
                     people={people}
+                    hasPeople={hasPeople}
                 />
             </Marker>
         );
@@ -63,9 +65,10 @@ const getProps = size => {
 const circleIcon = population => {
     const props = getProps(population);
     const radius = props["radius"];
+    const html = population !== 0 ? population : "";
 
     return L.divIcon({
-        html: `<div><span>${population}</span></div>`,
+        html: `<div><span>${html}</span></div>`,
         iconSize: [radius, radius],
         iconAnchor: [radius / 2, radius / 2],
         popupAnchor: [0, 0],
