@@ -185,6 +185,17 @@ in your [Python Virtual Environment](#python-virtual-environment):
 
 It should print out how many people and locations were added.
 
+Next, another script geocodes the locations retrieved
+from the `update_data.py` script
+using the [GeoNames database](https://www.geonames.org/)
+To connect to GeoNames,
+the script needs a personal access token,
+which you can create
+on the [GeoNames login page](http://www.geonames.org/login).
+Add your username
+to the `.env` file:
+`GEONAMES_USERNAME=<username>`
+
 Then, run the script to geocode the locations
 that were added by the last script:
 

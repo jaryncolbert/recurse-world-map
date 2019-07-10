@@ -84,8 +84,8 @@ def get_locations_from_db(cursor):
         'name': x[1],
     } for x in cursor.fetchall()]
 
-
-geolocator = GeoNames(username=***REMOVED***)
+geonames_username = getEnvVar(GEONAMES_USERNAME)
+geolocator = GeoNames(username=geonames_username)
 geopy.geocoders.options.default_timeout = None
 
 
