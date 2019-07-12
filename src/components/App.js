@@ -5,8 +5,9 @@ import Search from "./search/Search";
 import { getLocations, getLocationData } from "../api";
 
 export default class App extends React.Component {
+    // Centered on Yaounde, Cameroon
     DEFAULT_VIEWPORT = {
-        center: [3.846042, 11.502213], //Yaounde, Cameroon
+        center: [3.846042, 11.502213],
         zoom: 2.7
     };
 
@@ -31,7 +32,11 @@ export default class App extends React.Component {
 
             this.setState({
                 locations: locationList,
-                viewport: this.DEFAULT_VIEWPORT
+                selected: "",
+                viewport: {
+                    center: [3.846042, 11.502213],
+                    zoom: 2.7
+                }
             });
         });
     };
