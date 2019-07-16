@@ -15,7 +15,8 @@ export default class App extends React.Component {
         locations: [],
         viewport: this.DEFAULT_VIEWPORT,
         targetLocation: "",
-        selected: ""
+        selected: "",
+        resetInput: false
     };
 
     componentDidMount() {
@@ -76,6 +77,20 @@ export default class App extends React.Component {
         });
     };
 
+    resetSearch = () => {
+        this.setState({
+            resetInput: true
+        });
+
+        this.loadAllLocations();
+    };
+
+    onResetInputCompleted = () => {
+        this.setState({
+            resetInput: false
+        });
+    };
+
     render() {
         return (
             <div className="App">
@@ -83,7 +98,9 @@ export default class App extends React.Component {
                     <h1>World of Recursers</h1>
                     <Search
                         searchCompletedFn={this.zoomToLocation}
-                        resetFn={this.loadAllLocations}
+                        resetInput={this.state.resetInput}
+                        onResetInputCompleted={this.onResetInputCompleted}
+                        resetFn={this.resetSearch}
                     />
                 </div>
 

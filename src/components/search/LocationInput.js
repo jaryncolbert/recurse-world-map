@@ -52,11 +52,11 @@ export default class LocationInput extends React.Component {
         });
     };
 
-    onSuggestionsFetchRequested = ({ query }) => {
+    fetchSuggestions = ({ query }) => {
         this.autocompleteSearch(query);
     };
 
-    onSuggestionsClearRequested = () => {
+    clearSuggestions = () => {
         this.setState({
             suggestions: [],
             query: ""
@@ -82,6 +82,18 @@ export default class LocationInput extends React.Component {
         <span className="suggestion">{suggestion.name}</span>
     );
 
+    componentDidUpdate(prevProps) {
+        if (!prevProps.resetInput && this.props.resetInput) {
+            this.setState({
+                suggestions: [],
+                query: "",
+                value: ""
+            });
+            this.props.onResetInputCompleted();
+            console.log("clear suggestions");
+        }
+    }
+
     render() {
         const inputProps = {
             placeholder: "Enter a location",
@@ -93,12 +105,8 @@ export default class LocationInput extends React.Component {
                 <Autosuggest
                     suggestions={this.state.suggestions || []}
                     onSuggestionSelected={this.onSuggestionSelected}
-                    onSuggestionsFetchRequested={
-                        this.onSuggestionsFetchRequested
-                    }
-                    onSuggestionsClearRequested={
-                        this.onSuggestionsClearRequested
-                    }
+                    onSuggestionsFetchRequested={this.fetchSuggestions}
+                    onSuggestionsClearRequested={this.clearSuggestions}
                     getSuggestionValue={this.getSuggestionValue}
                     renderSuggestion={this.renderSuggestion}
                     inputProps={inputProps}
