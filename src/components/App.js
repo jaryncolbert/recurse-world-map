@@ -57,11 +57,14 @@ export default class App extends React.Component {
                 ) {
                     newLocations.push(result);
                 }
+                const lat = parseFloat(result["lat"]);
+                const lng = parseFloat(result["lng"]);
+
                 this.setState({
                     locations: newLocations,
                     targetLocation: result["location_id"],
                     viewport: {
-                        center: [result["lat"], result["lng"]],
+                        center: [lat, lng],
                         zoom: 9
                     }
                 });
