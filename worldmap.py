@@ -315,7 +315,8 @@ def get_geolocation(cursor, location_id):
         'location_id': x[0],
         'location_name': x[1],
         'lat': x[2],
-        'lng': x[3]
+        'lng': x[3],
+        'has_rc_people': False
     } for x in cursor.fetchall()]
 
     if (len(locations) == 0):
@@ -349,6 +350,7 @@ def get_geolocation_with_people(cursor, location_id):
         'location_name': x[1],
         'lat': x[2],
         'lng': x[3],
+        'has_rc_people': True,
         'person_id': x[4],
         'first_name': x[5],
         'last_name': x[6],
