@@ -1,20 +1,10 @@
-body {
-    padding-bottom: 30px;
-}
-h1,
-h2,
-p {
-    font-family: sans-serif;
-    text-align: center;
-}
 .leaflet-container {
-    height: 1000px;
-    width: 100%;
+    height: 100%;
+    width: 90%;
     margin: 0 auto;
     z-index: 10;
     top: 0px;
     left: 0px;
-    margin-top: 10px;
 }
 
 .circle-icon {

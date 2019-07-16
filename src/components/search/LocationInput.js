@@ -3,7 +3,6 @@ import { throttle, debounce } from "throttle-debounce";
 import Autosuggest from "react-autosuggest";
 
 import { getLocationSuggestions } from "../../api";
-import "../../css/search.css";
 
 export default class LocationInput extends React.Component {
     constructor(props) {
@@ -90,7 +89,7 @@ export default class LocationInput extends React.Component {
             onChange: this.onChange
         };
         return (
-            <div className="location-input col-xl">
+            <div className="location-input col-md-4">
                 <Autosuggest
                     suggestions={this.state.suggestions || []}
                     onSuggestionSelected={this.onSuggestionSelected}

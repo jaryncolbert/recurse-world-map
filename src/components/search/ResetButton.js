@@ -2,7 +2,10 @@ import React from "react";
 
 export default function ResetButton({ resetFn }) {
     return (
-        <button className="btn btn-primary col-sm" onClick={resetFn}>
+        <button
+            id="reset-button"
+            className="btn btn-primary col-xs-2"
+            onClick={resetFn}>
             Reset
         </button>
     );

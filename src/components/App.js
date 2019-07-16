@@ -8,7 +8,7 @@ export default class App extends React.Component {
     // Centered on Yaounde, Cameroon
     DEFAULT_VIEWPORT = {
         center: [3.846042, 11.502213],
-        zoom: 2.7
+        zoom: 2.5
     };
 
     state = {
@@ -33,10 +33,8 @@ export default class App extends React.Component {
             this.setState({
                 locations: locationList,
                 selected: "",
-                viewport: {
-                    center: [3.846042, 11.502213],
-                    zoom: 2.7
-                }
+                targetLocation: "",
+                viewport: this.DEFAULT_VIEWPORT
             });
         });
     };
@@ -81,17 +79,22 @@ export default class App extends React.Component {
     render() {
         return (
             <div className="App">
-                <h1>World of Recursers</h1>
-                <Search
-                    searchCompletedFn={this.zoomToLocation}
-                    resetFn={this.loadAllLocations}
-                />
-                <LeafletMap
-                    onViewReset={this.setSelected}
-                    locations={this.state.locations}
-                    viewport={this.state.viewport}
-                    selected={this.state.selected}
-                />
+                <div className="header-search">
+                    <h1>World of Recursers</h1>
+                    <Search
+                        searchCompletedFn={this.zoomToLocation}
+                        resetFn={this.loadAllLocations}
+                    />
+                </div>
+
+                <div id="recurse-map">
+                    <LeafletMap
+                        onViewReset={this.setSelected}
+                        locations={this.state.locations}
+                        viewport={this.state.viewport}
+                        selected={this.state.selected}
+                    />
+                </div>
             </div>
         );
     }
