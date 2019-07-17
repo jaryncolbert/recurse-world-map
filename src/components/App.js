@@ -34,8 +34,7 @@ export default class App extends React.Component {
             this.setState({
                 locations: locationList,
                 selected: "",
-                targetLocation: "",
-                viewport: this.DEFAULT_VIEWPORT
+                targetLocation: ""
             });
         });
     };
@@ -106,6 +105,7 @@ export default class App extends React.Component {
 
                 <div id="recurse-map">
                     <LeafletMap
+                        fitBoundsTriggered={this.state.resetInput}
                         onViewReset={this.setSelected}
                         locations={this.state.locations}
                         viewport={this.state.viewport}
