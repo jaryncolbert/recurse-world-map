@@ -1,10 +1,10 @@
 {
-    "name": "recurse-world-map",
+    "name": "world-of-recurse-map",
     "version": "1.0.0",
     "private": true,
     "author": "Jaryn Colbert <jaryn.colbert@gmail.com>",
     "license": "AGPL-3.0-only",
-    "homepage": "https://world-of-recurse.herokuapp.com/",
+    "homepage": "https://world.recurse.com/",
     "dependencies": {
         "bootstrap": "^4.3.1",
         "dotenv": "^8.0.0",
