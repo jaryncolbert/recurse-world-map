@@ -70,6 +70,18 @@ def index():
     return send_from_directory('build', 'index.html')
 
 
+@app.route('/favicon.ico')
+def favicon():
+    "Get the app favicon"
+    return send_from_directory('build', 'favicon.ico')
+
+
+@app.route('/manifest.json')
+def manifest():
+    "Get the app manifest"
+    return send_from_directory('build', 'manifest.json')
+
+
 @app.route('/static/<path:path>')
 def static_file(path):
     "Get the single-page app assets"
