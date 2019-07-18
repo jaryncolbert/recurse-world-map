@@ -66,6 +66,10 @@ body {
     margin-bottom: 0.8em;
 }
 
+.location-input {
+    max-width: 75%;
+}
+
 .header-search {
     width: 90%;
     margin: auto;
