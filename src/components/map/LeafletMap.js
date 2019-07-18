@@ -47,8 +47,8 @@ export default class LeafletMap extends React.Component {
                 zoomSnap="0.2"
                 maxZoom={11}>
                 <TileLayer
-                    attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='Map tiles by © <a href= "http://cartodb.com/attributions#basemaps">Carto</a>, under CC BY 3.0. Data by © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, under ODbL.'
+                    url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png"
                 />
                 <LocationClusterGroup
                     fitBoundsTriggered={this.state.fitBoundsTriggered}
