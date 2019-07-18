@@ -45,7 +45,6 @@ export default class LeafletMap extends React.Component {
                 ref="mapRef"
                 viewport={viewport}
                 zoomSnap="0.2"
-                onresize={this.triggerFitBounds}
                 maxZoom={11}>
                 <TileLayer
                     attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
