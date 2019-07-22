@@ -12,6 +12,8 @@ export default class LeafletMap extends React.Component {
     };
 
     fitBounds = bounds => {
+        const { onFitBounds } = this.props;
+
         const fitBoundsOptions = {
             padding: [40, 40]
         };
@@ -21,6 +23,8 @@ export default class LeafletMap extends React.Component {
         this.setState({
             fitBoundsTriggered: false
         });
+
+        onFitBounds();
     };
 
     triggerFitBounds = () => {

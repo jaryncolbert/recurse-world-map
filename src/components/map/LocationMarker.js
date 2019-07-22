@@ -39,6 +39,10 @@ export default class LocationMarker extends React.Component {
                 leafletMarker.openPopup();
                 onPopupDisplayedFn();
             }
+
+            if (!isSelected) {
+                leafletMarker.closePopup();
+            }
         }
     }
 

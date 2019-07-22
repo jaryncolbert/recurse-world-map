@@ -83,14 +83,13 @@ export default class LocationInput extends React.Component {
     );
 
     componentDidUpdate(prevProps) {
-        if (!prevProps.resetInput && this.props.resetInput) {
+        if (!prevProps.clearInput && this.props.clearInput) {
             this.setState({
                 suggestions: [],
                 query: "",
                 value: ""
             });
-            this.props.onResetInputCompleted();
-            console.log("clear suggestions");
+            this.props.onInputCleared();
         }
     }
 

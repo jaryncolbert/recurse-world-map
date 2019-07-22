@@ -6,8 +6,8 @@ import "../../css/search.css";
 
 export default function Search({
     searchCompletedFn,
-    onResetInputCompleted,
-    resetInput,
+    onInputCleared,
+    clearInput,
     resetFn
 }) {
     return (
@@ -15,8 +15,8 @@ export default function Search({
             <div className="row">
                 <LocationInput
                     onSearchCompleted={searchCompletedFn}
-                    onResetInputCompleted={onResetInputCompleted}
-                    resetInput={resetInput}
+                    onInputCleared={onInputCleared}
+                    clearInput={clearInput}
                     resetFn={resetFn}
                 />
                 <ResetButton resetFn={resetFn} />

@@ -15,7 +15,8 @@ export default class App extends React.Component {
         locations: [],
         viewport: this.DEFAULT_VIEWPORT,
         selected: "",
-        resetInput: false
+        triggerClearInput: false,
+        triggerFitBounds: false
     };
 
     componentDidMount() {
@@ -63,16 +64,33 @@ export default class App extends React.Component {
     };
 
     resetSearch = () => {
-        this.setState({
-            resetInput: true
-        });
-
+        this.triggerClearInput();
         this.loadAllLocations();
+        this.triggerFitBounds();
     };
 
-    onResetInputCompleted = () => {
+    triggerClearInput = () => {
         this.setState({
-            resetInput: false
+            triggerClearInput: true
+        });
+    };
+
+    onInputCleared = () => {
+        this.setState({
+            triggerClearInput: false,
+            selected: ""
+        });
+    };
+
+    triggerFitBounds = () => {
+        this.setState({
+            triggerFitBounds: true
+        });
+    };
+
+    onFitBounds = () => {
+        this.setState({
+            triggerFitBounds: false
         });
     };
 
@@ -83,18 +101,20 @@ export default class App extends React.Component {
                     <h1>World of Recursers</h1>
                     <Search
                         searchCompletedFn={this.setSelectedLocation}
-                        resetInput={this.state.resetInput}
-                        onResetInputCompleted={this.onResetInputCompleted}
+                        clearInput={this.state.triggerClearInput}
+                        onInputCleared={this.onInputCleared}
                         resetFn={this.resetSearch}
                     />
                 </div>
 
                 <div id="recurse-map">
                     <LeafletMap
-                        fitBoundsTriggered={this.state.resetInput}
+                        fitBoundsTriggered={this.state.triggerFitBounds}
+                        onFitBounds={this.onFitBounds}
                         locations={this.state.locations}
                         viewport={this.state.viewport}
                         selected={this.state.selected}
+                        onClick={this.triggerClearInput}
                     />
                 </div>
             </div>
