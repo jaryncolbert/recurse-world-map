@@ -49,6 +49,18 @@ CREATE TABLE IF NOT EXISTS stints (
   PRIMARY KEY (person_id, start_date)
 );
 
+CREATE VIEW stints_for_people AS
+SELECT
+  stints.person_id,
+  stints.stint_type,
+  stints.title,
+  stints.start_date,
+  batches.short_name
+FROM stints
+LEFT JOIN batches
+  ON stints.batch_id = batches.batch_id
+ORDER BY stints.start_date;
+
 CREATE VIEW geolocations_with_affiliated_people AS
 SELECT
   l.location_id,

@@ -158,13 +158,42 @@ def group_people_by_location(locations):
             "first_name": location["first_name"],
             "last_name": location["last_name"],
             "image_url": location["image_url"],
+            "stint_type": location["stint_type"],
+            "rc_title": location["rc_title"],
+            "batch_name": location["batch_name"]
         } for location in group]
+        print("Person ", location_key, " for ", person_list)
 
-        sorted_list = sorted(person_list, key=lambda p: p["first_name"])
-        location_key["person_list"] = sorted_list
+        person_list_with_stints = group_stints_by_person(person_list)
+        location_key["person_list"] = person_list_with_stints
         grouped_locations.append(location_key)
 
     return grouped_locations
+
+
+def group_stints_by_person(person_list):
+    grouped_stints = []
+
+    # Use common stint info as grouping key
+    for stint_key, group in groupby(person_list, lambda s: {
+        "person_id": s["person_id"],
+        "first_name": s["first_name"],
+        "last_name": s["last_name"],
+        "image_url": s["image_url"]
+    }):
+        # Join all stint information into a list for each person
+        stint_list = [{
+            "stint_type": stint["stint_type"],
+            "rc_title": stint["rc_title"],
+            "batch_name": stint["batch_name"]
+        } for stint in group]
+
+        print("Stint ", stint_key, " for ", stint_list)
+
+        stint_key["stints"] = stint_list
+        grouped_stints.append(stint_key)
+
+    return grouped_stints
 
 
 # @app.route('/api/locations/all')
@@ -206,16 +235,22 @@ def get_all_rc_locations_with_people():
     """Returns all locations in the database
     with their geolocation data and all affiliated RC users."""
     cursor.execute("""SELECT
-                        location_id,
-                        location_name,
-                        lat,
-                        lng,
-                        person_id,
-                        first_name,
-                        last_name,
-                        image_url
-                      FROM geolocations_with_affiliated_people
-                      ORDER BY location_id""")
+                        g.location_id,
+                        g.location_name,
+                        g.lat,
+                        g.lng,
+                        g.person_id,
+                        g.first_name,
+                        g.last_name,
+                        g.image_url,
+                        s.stint_type,
+                        s.title,
+                        s.short_name,
+                        s.start_date
+                      FROM geolocations_with_affiliated_people as g
+                      INNER JOIN stints_for_people as s
+                        ON s.person_id = g.person_id
+                      ORDER BY location_id, first_name, person_id, start_date""")
     locations = [{
         'location_id': x[0],
         'location_name': x[1],
@@ -225,7 +260,10 @@ def get_all_rc_locations_with_people():
         'person_id': x[4],
         'first_name': x[5],
         'last_name': x[6],
-        'image_url': x[7]
+        'image_url': x[7],
+        'stint_type': x[8],
+        'rc_title': x[9],
+        'batch_name': x[10]
     } for x in cursor.fetchall()]
     cursor.close()
 
@@ -346,17 +384,23 @@ def get_geolocation_with_people(cursor, location_id):
     ))
     """Returns the requested geolocation data for a location with the given idea."""
     cursor.execute("""SELECT
-                        location_id,
-                        location_name,
-                        lat,
-                        lng,
-                        person_id,
-                        first_name,
-                        last_name,
-                        image_url
-                      FROM geolocations_with_affiliated_people
+                        g.location_id,
+                        g.location_name,
+                        g.lat,
+                        g.lng,
+                        g.person_id,
+                        g.first_name,
+                        g.last_name,
+                        g.image_url,
+                        s.stint_type,
+                        s.title,
+                        s.short_name,
+                        s.start_date
+                      FROM geolocations_with_affiliated_people as g
+                      INNER JOIN stints_for_people as s
+                      ON s.person_id = g.person_id
                       WHERE location_id = %s
-                      ORDER BY location_id""", [location_id])
+                      ORDER BY location_id, first_name, person_id, start_date""", [location_id])
     locations = [{
         'location_id': x[0],
         'location_name': x[1],
@@ -366,7 +410,10 @@ def get_geolocation_with_people(cursor, location_id):
         'person_id': x[4],
         'first_name': x[5],
         'last_name': x[6],
-        'image_url': x[7]
+        'image_url': x[7],
+        'stint_type': x[8],
+        'rc_title': x[9],
+        'batch_name': x[10]
     } for x in cursor.fetchall()]
 
     grouped = group_people_by_location(locations)
