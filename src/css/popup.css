@@ -1,21 +1,36 @@
 .leaflet-popup-content-wrapper {
-    width: 20vw;
+    width: 100%;
     max-height: 60vh;
 }
 
 .leaflet-popup-content {
     flex: auto;
-    font-size: 1vw;
-    max-width: 16vw;
+    max-width: 30vw;
+    width: 100%;
 }
 
 .location-popup .location-name {
     font-weight: bold;
-    font-size: 1.3vw;
+    font-size: 20px;
     text-align: center;
 }
 
 .location-popup .location-stats {
     font-style: italic;
     text-align: center;
+}
+
+.leaflet-popup-content {
+    max-width: 90%;
+    max-height: 60%;
+    font-size: 16px;
+    margin: 1.5em;
+}
+
+.leaflet-popup-content p {
+    margin: 1em;
+}
+
+.leaflet-popup-content ul {
+    padding-inline-start: 1.5em;
 }
