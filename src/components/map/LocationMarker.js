@@ -5,6 +5,43 @@ import { Marker } from "react-leaflet";
 import LocationPopup from "./LocationPopup";
 
 export default class LocationMarker extends React.Component {
+    componentDidMount() {
+        let { isSelected, zoomToShowMarkerFn } = this.props;
+
+        const markerRef = this.refs.markerRef;
+
+        if (isSelected && markerRef) {
+            const leafletMarker = markerRef.leafletElement;
+            zoomToShowMarkerFn(leafletMarker);
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        let {
+            isSelected,
+            zoomToShowMarkerFn,
+            isVisible,
+            onPopupDisplayedFn
+        } = this.props;
+
+        const markerRef = this.refs.markerRef;
+
+        if (markerRef) {
+            const leafletMarker = markerRef.leafletElement;
+
+            if (isSelected && !prevProps.isSelected) {
+                // Call function to zoom to the boundaries of the selected marker
+                // then open its popup
+                zoomToShowMarkerFn(leafletMarker);
+            }
+
+            if (isSelected && !prevProps.isVisible && isVisible) {
+                leafletMarker.openPopup();
+                onPopupDisplayedFn();
+            }
+        }
+    }
+
     render() {
         const { location, isSelected } = this.props;
 
@@ -12,19 +49,13 @@ export default class LocationMarker extends React.Component {
         const population = people ? people.length : 0;
         const hasPeople = !!location["has_rc_people"];
 
-        const openPopup = ref => {
-            if (ref) {
-                ref.leafletElement.openPopup();
-            }
-        };
-
         if (population === 0 && !isSelected && !hasPeople) {
             return null;
         }
 
         return (
             <Marker
-                ref={isSelected && openPopup}
+                ref="markerRef"
                 position={[
                     parseFloat(location["lat"]),
                     parseFloat(location["lng"])

@@ -4,6 +4,10 @@ import MarkerClusterGroup from "react-leaflet-markercluster";
 import LocationMarker from "./LocationMarker";
 
 export default class LocationClusterGroup extends React.Component {
+    state = {
+        triggerPopup: false
+    };
+
     componentDidUpdate(prevProps) {
         let { locations, fitBoundsFn, fitBoundsTriggered } = this.props;
 
@@ -25,6 +29,8 @@ export default class LocationClusterGroup extends React.Component {
         return (
             <MarkerClusterGroup
                 ref="clusterGroupRef"
+                disableClusteringAtZoom={11}
+                spiderfyOnMaxZoom={false}
                 {...otherProps}
                 iconCreateFunction={this.clusterGroupIcon}>
                 {locations.map(loc => {
@@ -32,13 +38,35 @@ export default class LocationClusterGroup extends React.Component {
                         <LocationMarker
                             key={loc["location_id"]}
                             location={loc}
+                            zoomToShowMarkerFn={this.zoomToMarker}
                             isSelected={selected === loc["location_id"]}
+                            isVisible={this.state.triggerPopup}
+                            onPopupDisplayedFn={this.onPopupDisplayed}
                         />
                     );
                 })}
             </MarkerClusterGroup>
         );
     }
+
+    zoomToMarker = marker => {
+        this.refs.clusterGroupRef.leafletElement.zoomToShowLayer(
+            marker,
+            this.triggerPopup
+        );
+    };
+
+    triggerPopup = () => {
+        this.setState({
+            triggerPopup: true
+        });
+    };
+
+    onPopupDisplayed = () => {
+        this.setState({
+            triggerPopup: false
+        });
+    };
 
     getPropsForSize = size => {
         const numToRadius = {

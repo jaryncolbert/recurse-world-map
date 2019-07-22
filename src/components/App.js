@@ -14,7 +14,6 @@ export default class App extends React.Component {
     state = {
         locations: [],
         viewport: this.DEFAULT_VIEWPORT,
-        targetLocation: "",
         selected: "",
         resetInput: false
     };
@@ -33,13 +32,12 @@ export default class App extends React.Component {
 
             this.setState({
                 locations: locationList,
-                selected: "",
-                targetLocation: ""
+                selected: ""
             });
         });
     };
 
-    zoomToLocation = location => {
+    setSelectedLocation = location => {
         getLocationData(location).then(result => {
             if (!result["location_id"]) {
                 throw Error(
@@ -55,24 +53,12 @@ export default class App extends React.Component {
                 ) {
                     newLocations.push(result);
                 }
-                const lat = parseFloat(result["lat"]);
-                const lng = parseFloat(result["lng"]);
 
                 this.setState({
                     locations: newLocations,
-                    targetLocation: result["location_id"],
-                    viewport: {
-                        center: [lat, lng],
-                        zoom: 9
-                    }
+                    selected: result["location_id"]
                 });
             }
-        });
-    };
-
-    setSelected = () => {
-        this.setState({
-            selected: this.state.targetLocation
         });
     };
 
@@ -96,7 +82,7 @@ export default class App extends React.Component {
                 <div className="header-search">
                     <h1>World of Recursers</h1>
                     <Search
-                        searchCompletedFn={this.zoomToLocation}
+                        searchCompletedFn={this.setSelectedLocation}
                         resetInput={this.state.resetInput}
                         onResetInputCompleted={this.onResetInputCompleted}
                         resetFn={this.resetSearch}
@@ -106,7 +92,6 @@ export default class App extends React.Component {
                 <div id="recurse-map">
                     <LeafletMap
                         fitBoundsTriggered={this.state.resetInput}
-                        onViewReset={this.setSelected}
                         locations={this.state.locations}
                         viewport={this.state.viewport}
                         selected={this.state.selected}
