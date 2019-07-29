@@ -36,14 +36,14 @@ def getEnvVar(var_name, fallback=""):
 def get_people(token):
     people = []
 
-    headers = {'Authorization': f'Bearer {token}'}
+    session = requests.session()
+    session.headers.update({'Authorization': f'Bearer {token}'})
     url = 'https://www.recurse.com/api/v1/profiles?limit={limit}&offset={offset}'
     limit = 50
     offset = 0
 
     while True:
-        r = requests.get(url.format(
-            limit=limit, offset=offset), headers=headers)
+        r = session.get(url.format(limit=limit, offset=offset))
         if r.status_code != requests.codes.ok:
             r.raise_for_status()
         page = r.json()
