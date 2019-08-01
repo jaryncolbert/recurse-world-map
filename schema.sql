@@ -1,29 +1,29 @@
 CREATE TABLE IF NOT EXISTS batches (
   batch_id INTEGER PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
-  short_name TEXT
+  short_name TEXT NULL
 );
 
 CREATE TABLE IF NOT EXISTS people (
   person_id INTEGER PRIMARY KEY,
-  first_name TEXT,
-  middle_name TEXT,
-  last_name TEXT,
-  image_url TEXT
+  first_name TEXT NOT NULL,
+  middle_name TEXT NULL,
+  last_name TEXT NOT NULL,
+  image_url TEXT NULL
 );
 
 CREATE TABLE IF NOT EXISTS locations (
   location_id INTEGER PRIMARY KEY,
-  name TEXT,
-  short_name TEXT
+  name TEXT NOT NULL,
+  short_name TEXT NULL
 );
 
 CREATE TABLE IF NOT EXISTS geolocations (
-  location_id INTEGER NULL REFERENCES locations (location_id),
+  location_id INTEGER REFERENCES locations (location_id) PRIMARY KEY,
   name TEXT NOT NULL,
   type TEXT NOT NULL,
-  subdivision_derived TEXT,
-  subdivision_code TEXT,
+  subdivision_derived TEXT NULL,
+  subdivision_code TEXT NULL,
   country_name TEXT NOT NULL,
   country_code TEXT NOT NULL,
   lat TEXT NOT NULL,
@@ -33,9 +33,9 @@ CREATE TABLE IF NOT EXISTS geolocations (
 CREATE TABLE IF NOT EXISTS location_affiliations (
   person_id INTEGER NOT NULL REFERENCES people (person_id),
   location_id INTEGER NULL REFERENCES locations (location_id),
-  start_date DATE,
-  end_date DATE,
-  affiliation_type TEXT,
+  start_date DATE NULL,
+  end_date DATE NULL,
+  affiliation_type TEXT NULL,
   PRIMARY KEY (person_id, location_id)
 );
 
@@ -45,8 +45,13 @@ CREATE TABLE IF NOT EXISTS stints (
   stint_type TEXT NOT NULL,
   start_date DATE NOT NULL,
   end_date DATE NULL,
-  title TEXT,
+  title TEXT NULL,
   PRIMARY KEY (person_id, start_date)
+);
+
+CREATE TABLE IF NOT EXISTS location_aliases (
+  location_id INTEGER NOT NULL REFERENCES locations (location_id) PRIMARY KEY,
+  preferred_location_id INTEGER NOT NULL REFERENCES locations (location_id)
 );
 
 CREATE VIEW stints_for_people AS
