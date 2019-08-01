@@ -25,7 +25,7 @@ from flask import Flask, jsonify, redirect, request, send_from_directory, sessio
 from authlib.flask.client import OAuth
 from werkzeug.exceptions import HTTPException
 import psycopg2
-from geocode_locations import get_env_var, lookup_and_insert_geodata
+from geocode_locations import get_env_var, lookup_geodata, insert_geo_data, insert_alias
 
 
 # pylint: disable=invalid-name
@@ -145,7 +145,6 @@ def group_people_by_location(locations):
             "rc_title": location["rc_title"],
             "batch_name": location["batch_name"]
         } for location in group]
-        print("Person ", location_key, " for ", person_list)
 
         person_list_with_stints = group_stints_by_person(person_list)
         location_key["person_list"] = person_list_with_stints
@@ -170,8 +169,6 @@ def group_stints_by_person(person_list):
             "rc_title": stint["rc_title"],
             "batch_name": stint["batch_name"]
         } for stint in group]
-
-        print("Stint ", stint_key, " for ", stint_list)
 
         stint_key["stints"] = stint_list
         grouped_stints.append(stint_key)
@@ -279,41 +276,101 @@ def locations_search():
 def get_location(id):
     cursor = connection.cursor()
 
-    # If location exists with people affiliated, return it
+    # If location is aliased to another location, find preferred location
+    preferred_id = get_alias(cursor, id)
+    if (preferred_id):
+        id = preferred_id
+
+    # If geolocation data exists with people affiliated, return it
     location = get_geolocation_with_people(cursor, id)
     if (location):
         return jsonify(location)
 
-    # Else lookup geolocation info, and then return it
+    # Else lookup existing geolocation info, and then return it
     location = get_geolocation(cursor, id)
     if (location):
         return jsonify(location)
 
+    # Otherwise, create and insert new location
     location_name = request.args.get('name')
     if (location_name == ""):
         return jsonify({})
 
-    # Otherwise geolocate by name, insert it into DB, and then return it
     location = {
         "id": id,
+        "location_id": id,
         "name": location_name,
         "short_name": request.args.get('short_name'),
         "type": request.args.get('type')
     }
 
-    # Insert location into 'locations' table
     insert_location(cursor, location)
     connection.commit()
 
-    # Geocode location and insert into 'geolocations' table
-    lookup_and_insert_geodata(cursor, location)
+    # If there's an existing location in the db with the same lat/lng,
+    # return its geolocation instead and create an alias
+    geo = lookup_geodata(cursor, location)
+    preferred_location = find_location_with_coords(cursor, geo)
+    if (preferred_location):
+        insert_alias(cursor, location, preferred_location)
+        return get_location(preferred_location["location_id"])
+
+    # Otherwise, insert new geolocation into database and return it
+    insert_geo_data(cursor, geo)
     connection.commit()
 
-    # Get new geolocation data from DB
-    location = get_geolocation(cursor, id)
-    cursor.close()
+    # Format geolocation data to only pull out relevant keys
+    return jsonify({
+        "location_id": geo["location_id"],
+        "location_name": geo["name"],
+        "lat": geo["lat"],
+        "lng": geo["lng"],
+        "has_rc_people": False
+    })
 
-    return jsonify(location)
+
+# Returns the id of the preferred location if this location
+# has an alias (e.g. "Manhattan, NY" -> "New York City, NY").
+# If no alias exists, returns None.
+
+
+def get_alias(cursor, location_id):
+    logging.info("Select Alias for Location ID #{}".format(
+        location_id
+    ))
+    """Returns the preferred location alias for the location 
+        with the given id if an alias exists."""
+    cursor.execute("""SELECT
+                        preferred_location_id
+                      FROM location_aliases
+                      WHERE location_id = %s""", [location_id])
+
+    alias_id = cursor.fetchone()
+
+    return alias_id[0] if alias_id else None
+
+
+def find_location_with_coords(cursor, location):
+    """Searches database for a location with lat/lng values matching those of the given location."""
+    cursor.execute("""SELECT
+                        location_id,
+                        name,
+                        lat,
+                        lng
+                      FROM geolocations
+                      WHERE lat = %s
+                      AND lng = %s
+                      AND NOT location_id = %s""",
+                   [location["lat"], location["lng"], location["location_id"]])
+
+    results = [{
+        'location_id': x[0],
+        'location_name': x[1],
+        'lat': x[2],
+        'lng': x[3]
+    } for x in cursor.fetchall()]
+
+    return require_one(results, location["location_id"])
 
 
 def insert_location(cursor, location):
@@ -324,7 +381,9 @@ def insert_location(cursor, location):
     ))
     cursor.execute("INSERT INTO locations" +
                    " (location_id, name, short_name)" +
-                   " VALUES (%s, %s, %s)",
+                   " VALUES (%s, %s, %s) " + 
+                   " ON CONFLICT ON CONSTRAINT locations_pkey " + 
+                   " DO NOTHING ",
                    [location.get('id'),
                     location.get('name'),
                     location.get('short_name')
@@ -344,21 +403,16 @@ def get_geolocation(cursor, location_id):
                         lng
                       FROM geolocations
                       WHERE location_id = %s""", [location_id])
-    locations = [{
+
+    x = cursor.fetchone()
+
+    return {
         'location_id': x[0],
         'location_name': x[1],
         'lat': x[2],
         'lng': x[3],
         'has_rc_people': False
-    } for x in cursor.fetchall()]
-
-    if (len(locations) == 0):
-        return {}
-    if (len(locations) == 1):
-        return locations[0]
-
-    # Otherwise, throw error - Result should be <= 1
-    raise ValueError("Multiple locations returned for id " + id)
+    } if x else {}
 
 
 def get_geolocation_with_people(cursor, location_id):
@@ -400,11 +454,14 @@ def get_geolocation_with_people(cursor, location_id):
     } for x in cursor.fetchall()]
 
     grouped = group_people_by_location(locations)
+    return require_one(grouped, location_id)
 
-    if (len(grouped) == 0):
+
+def require_one(location_arr, location_id):
+    if (len(location_arr) == 0):
         return {}
-    if (len(grouped) == 1):
-        return grouped[0]
+    if (len(location_arr) == 1):
+        return location_arr[0]
 
     # Otherwise, throw error - Result should be <= 1
-    raise ValueError("Multiple locations returned for id " + id)
+    raise ValueError("Multiple locations returned for id " + location_id)

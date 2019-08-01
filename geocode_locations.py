@@ -25,7 +25,6 @@ logging.basicConfig(level=logging.INFO)
 
 
 def get_env_var(var_name, fallback=""):
-    load_dotenv()
 
     value = os.getenv(var_name) or fallback
     if not value:
@@ -40,6 +39,8 @@ def get_env_var(var_name, fallback=""):
 
 def delete_data(cursor):
     cursor.execute('DELETE FROM geolocations')
+    cursor.execute('DELETE FROM location_aliases')
+    logging.info('Deleted existing tables')
 
 
 def replace_data(database_url):
@@ -47,13 +48,13 @@ def replace_data(database_url):
     cursor = connection.cursor()
 
     delete_data(cursor)
-    logging.info('Deleted existing tables')
     insert_data(cursor)
-    logging.info('Completed database update')
+    reconcile_duplicates(cursor)
 
     connection.commit()
     cursor.close()
     connection.close()
+    logging.info('Completed database update')
 
 
 def insert_data(cursor):
@@ -63,17 +64,16 @@ def insert_data(cursor):
     logging.info('Adding geolocation data... (this will take a few minutes)')
 
     for location in locations:
-        lookup_and_insert_geodata(cursor, location)
+        geo = lookup_geodata(cursor, location)
+        insert_geo_data(cursor, geo)
 
     logging.info('Inserted %s locations', len(locations))
 
 
-def lookup_and_insert_geodata(cursor, location):
+def lookup_geodata(cursor, location):
     parsed = parse_location(location)
     result = geonames_query(parsed)
     geo = add_geonames_result(parsed, result)
-    insert_geo_data(cursor, geo)
-
     return geo
 
 
@@ -192,6 +192,106 @@ def insert_geo_data(cursor, location):
                     location.get('lng'),
                     ]
                    )
+
+
+def insert_alias(cursor, location, preferred_location):
+    logging.info("Insert Alias #{} {} for Location #{} {}".format(
+        location.get('location_id'),
+        location.get('name'),
+        preferred_location.get('location_id'),
+        preferred_location.get('name')
+    ))
+
+    cursor.execute("INSERT INTO location_aliases" +
+                   " (location_id, preferred_location_id)" +
+                   " VALUES (%s, %s)",
+                   [location.get('location_id'),
+                    preferred_location.get('location_id')])
+
+
+def reconcile_duplicates(cursor):
+    logging.info('Beginning reconciliation of duplicate locations')
+
+    # Find locations where lat/lng count is greater than one
+    # Get counts for populations of RCers at each location
+    for counts in get_location_counts(cursor):
+
+        # Find the location with the greatest number of RCers
+        preferred_index = None
+        max_count = 0
+
+        for i, loc in enumerate(counts):
+            pop = loc["population"]  # pop can be null
+
+            if (pop and pop > max_count):
+                max_count = pop
+                preferred_index = i
+
+        dupe_locs = counts
+        preferred_loc = dupe_locs.pop(preferred_index)
+
+        for loc in dupe_locs:
+            # Add aliases for duplicate locations to point to preferred
+            insert_alias(cursor, loc, preferred_loc)
+
+            # Update all people pointing to old location with new in location_affiliations
+            update_location_affiliations(cursor, loc, preferred_loc)
+
+            # Delete duplicate from geolocations
+            delete_geolocation(cursor, loc)
+
+    logging.info('Duplicate locations removed')
+
+
+def get_location_counts(cursor):
+    """Returns then lat/lng values of duplicate locations with their population counts."""
+    cursor.execute("""SELECT
+                        json_agg(
+                            json_build_object(
+                                'location_id', g.location_id, 
+                                'name', g.name, 
+                                'population', population
+                            )
+                        ) as counts
+                      FROM geolocations g
+                      LEFT JOIN (
+                          SELECT 
+                            location_id, 
+                            count(person_id) as population
+                          FROM location_affiliations
+                          GROUP BY location_id
+                        ) as p
+                      ON g.location_id = p.location_id
+                      GROUP BY lat, lng HAVING count(*) > 1""")
+
+    return [x[0] for x in cursor.fetchall()]
+
+
+def update_location_affiliations(cursor, old_location, new_location):
+    logging.info("Update Affiliations From #{} {} to New Location #{} {}".format(
+        old_location.get('location_id'),
+        old_location.get('name'),
+        new_location.get('location_id'),
+        new_location.get('name')
+    ))
+
+    """Updates all rows with the given old_location id to the new_location id in the locations_affiliations table."""
+    cursor.execute("""UPDATE location_affiliations
+                      SET location_id = %s
+                      WHERE location_id = %s""",
+                   [new_location["location_id"], old_location["location_id"]])
+
+
+def delete_geolocation(cursor, location):
+    logging.info("Delete Geolocation for #{} {}".format(
+        location.get('location_id'),
+        location.get('name')
+    ))
+
+    """Removes the row with the given location_id from the geolocation table."""
+    cursor.execute("""DELETE 
+                      FROM geolocations
+                      WHERE location_id = %s""", [location["location_id"]])
 
 
 if __name__ == "__main__":

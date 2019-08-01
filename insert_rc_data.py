@@ -58,6 +58,7 @@ def replace_data(database_url, people):
 
 def delete_data(cursor):
     cursor.execute('DELETE FROM geolocations')
+    cursor.execute('DELETE FROM location_aliases')
     cursor.execute('DELETE FROM location_affiliations')
     cursor.execute('DELETE FROM locations')
     cursor.execute('DELETE FROM stints')
