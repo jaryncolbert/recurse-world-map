@@ -20,34 +20,17 @@ Recurse World Map back-end
 from itertools import groupby
 import logging
 from functools import wraps
-import os
 import requests
 from flask import Flask, jsonify, redirect, request, send_from_directory, session, url_for
 from authlib.flask.client import OAuth
 from werkzeug.exceptions import HTTPException
 import psycopg2
-import sys
-from dotenv import load_dotenv
-from geo_lookup import lookup_and_insert_geodata
-
-load_dotenv()
-
-
-def getEnvVar(var_name, fallback=""):
-    value = os.getenv(var_name) or fallback
-    if not value:
-        logging.error(f"''{var_name}'' value not found.",
-                      " Ensure a .env or .flaskenv file is present",
-                      " with this environment variable set.")
-        sys.exit()
-
-    logging.info(var_name + ": " + value)
-    return value
+from geocode_locations import get_env_var, insert_geo_data
 
 
 # pylint: disable=invalid-name
 app = Flask(__name__, static_url_path='/build')
-app.secret_key = getEnvVar('FLASK_SECRET_KEY', 'development')
+app.secret_key = get_env_var('FLASK_SECRET_KEY', 'development')
 
 logging.basicConfig(level=logging.INFO)
 
@@ -56,12 +39,12 @@ rc = OAuth(app).register(
     api_base_url='https://www.recurse.com/api/v1/',
     authorize_url='https://www.recurse.com/oauth/authorize',
     access_token_url='https://www.recurse.com/oauth/token',
-    client_id=getEnvVar('CLIENT_ID'),
-    client_secret=getEnvVar('CLIENT_SECRET'),
+    client_id=get_env_var('CLIENT_ID'),
+    client_secret=get_env_var('CLIENT_SECRET'),
 )
 
-connection = psycopg2.connect(getEnvVar('DATABASE_URL'))
-token = getEnvVar('RC_API_ACCESS_TOKEN')
+connection = psycopg2.connect(get_env_var('DATABASE_URL'))
+token = get_env_var('RC_API_ACCESS_TOKEN')
 
 
 @app.route('/')
@@ -91,7 +74,7 @@ def static_file(path):
 @app.route('/auth/recurse')
 def auth_recurse_redirect():
     "Redirect to the Recurse Center OAuth2 endpoint"
-    callback = getEnvVar('CLIENT_CALLBACK')
+    callback = get_env_var('CLIENT_CALLBACK')
     return rc.authorize_redirect(callback)
 
 
@@ -382,7 +365,7 @@ def get_geolocation_with_people(cursor, location_id):
     logging.info("Select Location By ID #{}".format(
         location_id
     ))
-    """Returns the requested geolocation data for a location with the given idea."""
+    """Returns the requested geolocation data for a location with the given id."""
     cursor.execute("""SELECT
                         g.location_id,
                         g.location_name,

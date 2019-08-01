@@ -14,13 +14,19 @@ import json
 import logging
 import psycopg2
 import sys
+import os
 import geopy.geocoders
 from geopy.geocoders import GeoNames
 from geopy.exc import GeocoderTimedOut
-import os
+from dotenv import load_dotenv
 
 
-def getEnvVar(var_name, fallback=""):
+logging.basicConfig(level=logging.INFO)
+
+
+def get_env_var(var_name, fallback=""):
+    load_dotenv()
+
     value = os.getenv(var_name) or fallback
     if not value:
         logging.error(f"''{var_name}'' value not found.",
@@ -86,7 +92,7 @@ def get_locations_from_db(cursor):
     } for x in cursor.fetchall()]
 
 
-geonames_username = getEnvVar('GEONAMES_USERNAME')
+geonames_username = get_env_var('GEONAMES_USERNAME')
 geolocator = GeoNames(username=geonames_username)
 geopy.geocoders.options.default_timeout = None
 
@@ -189,12 +195,8 @@ def insert_geo_data(cursor, location):
 
 
 if __name__ == "__main__":
-    import os
-    from dotenv import load_dotenv
-
-    load_dotenv()
     logging.basicConfig(level=logging.INFO)
-    database_url = getEnvVar('DATABASE_URL')
+    database_url = get_env_var('DATABASE_URL')
 
     logging.info('Starting World Map geolocation update...')
     replace_data(database_url)
