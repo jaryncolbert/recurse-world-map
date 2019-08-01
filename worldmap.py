@@ -25,7 +25,7 @@ from flask import Flask, jsonify, redirect, request, send_from_directory, sessio
 from authlib.flask.client import OAuth
 from werkzeug.exceptions import HTTPException
 import psycopg2
-from geocode_locations import get_env_var, insert_geo_data
+from geocode_locations import get_env_var, lookup_and_insert_geodata
 
 
 # pylint: disable=invalid-name
