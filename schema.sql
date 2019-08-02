@@ -58,13 +58,29 @@ CREATE VIEW stints_for_people AS
 SELECT
   stints.person_id,
   stints.stint_type,
-  stints.title,
+  stints.title as rc_title,
   stints.start_date,
-  batches.short_name
+  batches.short_name as batch_name
 FROM stints
 LEFT JOIN batches
   ON stints.batch_id = batches.batch_id
 ORDER BY stints.start_date;
+
+CREATE VIEW stints_for_people_agg AS
+SELECT
+  person_id,
+  json_agg(
+    json_build_object(
+        'stint_type', stint_type,
+        'rc_title', rc_title,
+        'batch_name', batch_name,
+        'start_date', start_date
+    )
+    ORDER BY start_date
+  ) as stints
+FROM stints_for_people
+GROUP BY person_id;
+           
 
 CREATE VIEW geolocations_with_affiliated_people AS
 SELECT
@@ -82,3 +98,25 @@ FROM geolocations l
   INNER JOIN people p
     ON a.person_id = p.person_id
 ORDER BY l.location_id;
+
+CREATE VIEW geolocations_people_and_stints_agg AS
+SELECT
+  location_id,
+  location_name,
+  lat,
+  lng,
+  json_agg(
+      json_build_object(
+          'person_id', g.person_id, 
+          'first_name', first_name, 
+          'last_name', last_name,
+          'image_url', image_url,
+          'stints', stints
+      )
+      ORDER BY first_name
+  ) as person_list
+FROM geolocations_with_affiliated_people as g
+INNER JOIN stints_for_people_agg as s
+ON s.person_id = g.person_id
+GROUP BY location_id, location_name, lat, lng 
+ORDER BY location_id;
