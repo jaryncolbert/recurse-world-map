@@ -124,58 +124,6 @@ def needs_authorization(route):
     return wrapped_route
 
 
-def group_people_by_location(locations):
-    grouped_locations = []
-
-    # Use common location info as grouping key
-    for location_key, group in groupby(locations, lambda loc: {
-        "location_id": loc["location_id"],
-        "location_name": loc["location_name"],
-        "lat": loc["lat"],
-        "lng": loc["lng"],
-        "has_rc_people": loc["has_rc_people"]
-    }):
-        # Join all person information into a list for each location
-        person_list = [{
-            "person_id": location["person_id"],
-            "first_name": location["first_name"],
-            "last_name": location["last_name"],
-            "image_url": location["image_url"],
-            "stint_type": location["stint_type"],
-            "rc_title": location["rc_title"],
-            "batch_name": location["batch_name"]
-        } for location in group]
-
-        person_list_with_stints = group_stints_by_person(person_list)
-        location_key["person_list"] = person_list_with_stints
-        grouped_locations.append(location_key)
-
-    return grouped_locations
-
-
-def group_stints_by_person(person_list):
-    grouped_stints = []
-
-    # Use common stint info as grouping key
-    for stint_key, group in groupby(person_list, lambda s: {
-        "person_id": s["person_id"],
-        "first_name": s["first_name"],
-        "last_name": s["last_name"],
-        "image_url": s["image_url"]
-    }):
-        # Join all stint information into a list for each person
-        stint_list = [{
-            "stint_type": stint["stint_type"],
-            "rc_title": stint["rc_title"],
-            "batch_name": stint["batch_name"]
-        } for stint in group]
-
-        stint_key["stints"] = stint_list
-        grouped_stints.append(stint_key)
-
-    return grouped_stints
-
-
 # @app.route('/api/locations/all')
 @needs_authorization
 def get_all_rc_locations():
@@ -212,43 +160,50 @@ def get_all_rc_locations():
 def get_all_rc_locations_with_people():
     cursor = connection.cursor()
 
+    # Query returns list of locations grouped in the format: 
+    # {
+    #   location_id: 
+    #   location_name:
+    #   lat:
+    #   lng: 
+    #   person_list: [
+    #     {
+    #        person_id:
+    #        first_name:
+    #        last_name:
+    #        stints: [
+    #          {
+    #            stint_type:
+    #            rc_title:
+    #            batch_name:
+    #            start_date:
+    #          }
+    #        ]
+    #     }
+    #   ]
+    # }
+
     """Returns all locations in the database
     with their geolocation data and all affiliated RC users."""
     cursor.execute("""SELECT
-                        g.location_id,
-                        g.location_name,
-                        g.lat,
-                        g.lng,
-                        g.person_id,
-                        g.first_name,
-                        g.last_name,
-                        g.image_url,
-                        s.stint_type,
-                        s.title,
-                        s.short_name,
-                        s.start_date
-                      FROM geolocations_with_affiliated_people as g
-                      INNER JOIN stints_for_people as s
-                        ON s.person_id = g.person_id
-                      ORDER BY location_id, first_name, person_id, start_date""")
+                        location_id,
+                        location_name,
+                        lat,
+                        lng,
+                        person_list
+                      FROM geolocations_people_and_stints_agg""")
+    
     locations = [{
         'location_id': x[0],
         'location_name': x[1],
         'lat': x[2],
         'lng': x[3],
         'has_rc_people': True,
-        'person_id': x[4],
-        'first_name': x[5],
-        'last_name': x[6],
-        'image_url': x[7],
-        'stint_type': x[8],
-        'rc_title': x[9],
-        'batch_name': x[10]
+        'person_list': x[4]
     } for x in cursor.fetchall()]
     cursor.close()
 
-    grouped = group_people_by_location(locations)
-    return jsonify(grouped)
+    return jsonify(locations)
 
 
 @app.route('/api/locations/search')
@@ -365,9 +320,7 @@ def find_location_with_coords(cursor, location):
 
     results = [{
         'location_id': x[0],
-        'location_name': x[1],
-        'lat': x[2],
-        'lng': x[3]
+        'location_name': x[1]
     } for x in cursor.fetchall()]
 
     return require_one(results, location["location_id"])
@@ -421,40 +374,23 @@ def get_geolocation_with_people(cursor, location_id):
     ))
     """Returns the requested geolocation data for a location with the given id."""
     cursor.execute("""SELECT
-                        g.location_id,
-                        g.location_name,
-                        g.lat,
-                        g.lng,
-                        g.person_id,
-                        g.first_name,
-                        g.last_name,
-                        g.image_url,
-                        s.stint_type,
-                        s.title,
-                        s.short_name,
-                        s.start_date
-                      FROM geolocations_with_affiliated_people as g
-                      INNER JOIN stints_for_people as s
-                      ON s.person_id = g.person_id
-                      WHERE location_id = %s
-                      ORDER BY location_id, first_name, person_id, start_date""", [location_id])
+                        location_id,
+                        location_name,
+                        lat,
+                        lng,
+                        person_list
+                      FROM geolocations_people_and_stints_agg
+                      WHERE location_id = %s""", [location_id])
     locations = [{
         'location_id': x[0],
         'location_name': x[1],
         'lat': x[2],
         'lng': x[3],
         'has_rc_people': True,
-        'person_id': x[4],
-        'first_name': x[5],
-        'last_name': x[6],
-        'image_url': x[7],
-        'stint_type': x[8],
-        'rc_title': x[9],
-        'batch_name': x[10]
+        'person_list': x[4]
     } for x in cursor.fetchall()]
 
-    grouped = group_people_by_location(locations)
-    return require_one(grouped, location_id)
+    return require_one(locations, location_id)
 
 
 def require_one(location_arr, location_id):
