@@ -42,15 +42,15 @@ about Recursers in that location.
 
 ## Stack
 
-Initially, this code was ported over  
-from Jason Owens' [Recurse Faces app](https://github.com/jasonaowen/recurse-faces)! 
+Initially, this code was ported over
+from Jason Owens' [Recurse Faces app](https://github.com/jasonaowen/recurse-faces)!
 Like Faces, its main stack is also mainly Postgresql, Flask, and React.
 
 This app reads Recursers' locations
 from their profiles in the
 [Recurse Center API](https://github.com/recursecenter/wiki/wiki/Recurse-Center-API)
 (_login required_),
-and then uses the [Geopy](https://github.com/geopy/geopy) Python library
+and then uses the [Geocoder](http://geocoder.readthedocs.io) Python library
 with the [GeoNames](https://geonames.org) geocoder
 to find the latitude and longitude
 for each location name.
@@ -61,7 +61,7 @@ using [OpenStreetMap](https://www.openstreetmap.org/#map=19/40.65010/-73.94958) 
 ## Local Set Up
 
 The app is comprised of a Flask back-end and a React front-end.
-The instructions below detail 
+The instructions below detail
 how to set up and start both parts of the app.
 
 ### Start the Back End with the RC API
@@ -177,16 +177,17 @@ and add it to the `.env` file:
 `RC_API_ACCESS_TOKEN=<personal_access_token>`
 
 Run the script to populate the database
+with information from the RC API
 in your [Python Virtual Environment](#python-virtual-environment):
 
 ```sh
-(venv)$ ./update_data.py
+(venv)$ ./insert_rc_data.py
 ```
 
 It should print out how many people and locations were added.
 
 Next, another script geocodes the locations retrieved
-from the `update_data.py` script
+from the `insert_rc_data.py` script
 using the [GeoNames database](https://www.geonames.org/)
 To connect to GeoNames,
 the script needs a personal access token,
@@ -200,7 +201,7 @@ Then, run the script to geocode the locations
 that were added by the last script:
 
 ```sh
-(venv)$ ./geo_lookup.py
+(venv)$ ./geocode_locations.py
 ```
 
 **Note**: GeoNames rate limits the number
@@ -264,7 +265,7 @@ running at http://127.0.0.1:5000/.
 If you receive either of the following messages:
 
 ```sh
-File "./update_data.py", line 24
+File "./insert_rc_data.py", line 24
 headers = {'Authorization': f'Bearer {token}'}
                                                 ^
 SyntaxError: invalid syntax
