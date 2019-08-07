@@ -28,12 +28,19 @@ export default class LocationClusterGroup extends React.Component {
     };
 
     render() {
-        let { locations, selected, fitBoundsFn, ...otherProps } = this.props;
+        let {
+            locations,
+            selected,
+            fitBoundsFn,
+            padding,
+            ...otherProps
+        } = this.props;
         return (
             <MarkerClusterGroup
                 ref="clusterGroupRef"
                 disableClusteringAtZoom={11}
                 spiderfyOnMaxZoom={false}
+                onClusterClick={cluster => cluster.zoomToBounds(padding)}
                 {...otherProps}
                 iconCreateFunction={this.clusterGroupIcon}>
                 {locations.map(loc => {

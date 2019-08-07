@@ -11,6 +11,8 @@ export default class App extends React.Component {
         zoom: 2.5
     };
 
+    DEFAULT_PADDING = { padding: [50, 50] };
+
     state = {
         locations: [],
         viewport: this.DEFAULT_VIEWPORT,
@@ -138,6 +140,7 @@ export default class App extends React.Component {
                         selected={this.state.selected}
                         onClick={this.triggerClearInput}
                         isLoading={this.state.mapLoading}
+                        padding={this.DEFAULT_PADDING}
                     />
                 </div>
             </div>

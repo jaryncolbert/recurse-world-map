@@ -13,14 +13,11 @@ export default class LeafletMap extends React.Component {
     };
 
     fitBounds = bounds => {
-        const { onFitBounds } = this.props;
+        const { onFitBounds, padding } = this.props;
 
-        const fitBoundsOptions = {
-            padding: [40, 40]
-        };
         const mapElem = this.refs.mapRef.leafletElement;
 
-        mapElem.fitBounds(bounds, fitBoundsOptions);
+        mapElem.fitBounds(bounds, padding);
         this.setState({
             fitBoundsTriggered: false
         });
@@ -52,6 +49,7 @@ export default class LeafletMap extends React.Component {
             selected,
             viewport,
             isLoading,
+            padding,
             ...otherProps
         } = this.props;
         return isLoading ? (
@@ -73,6 +71,7 @@ export default class LeafletMap extends React.Component {
                     maxClusterRadius="45"
                     locations={locations}
                     selected={selected}
+                    padding={padding}
                 />
             </Map>
         );
