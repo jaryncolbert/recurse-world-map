@@ -15,9 +15,7 @@ import logging
 import psycopg2
 import sys
 import os
-import geopy.geocoders
-from geopy.geocoders import GeoNames
-from geopy.exc import GeocoderTimedOut
+import geocoder
 from dotenv import load_dotenv
 
 
@@ -25,12 +23,13 @@ logging.basicConfig(level=logging.INFO)
 
 
 def get_env_var(var_name, fallback=""):
+    load_dotenv()
 
     value = os.getenv(var_name) or fallback
     if not value:
-        logging.error(f"''{var_name}'' value not found.",
-                      " Ensure a .env or .flaskenv file is present",
-                      " with this environment variable set.")
+        logging.error(f"'{var_name}' value not found."
+                      f" Ensure a .env or .flaskenv file is present"
+                      f" with this environment variable set.")
         sys.exit()
 
     logging.info(var_name + ": " + value)
@@ -93,13 +92,9 @@ def get_locations_from_db(cursor):
 
 
 geonames_username = get_env_var('GEONAMES_USERNAME')
-geolocator = GeoNames(username=geonames_username)
-geopy.geocoders.options.default_timeout = None
-
 
 def geonames_query(location):
-    time.sleep(2)  # Slow down requests to avoid timeout (< 1/sec)
-    try_count = 0
+    time.sleep(2.5)  # Slow down requests to avoid timeout (< 1/sec)
 
     # Enhance query with all named parts of location, if present
     query = location["base_name"]
@@ -108,16 +103,10 @@ def geonames_query(location):
     if (location["type"] == "city"):
         query = query + " " + location["country_name"]
 
-    try:
-        return geolocator.geocode(query).raw
-    except GeocoderTimedOut as e:
-        if try_count > 10:      # max tries
-            raise e
+    # Limit results to city and country feature types
+    feature_classes = ['A', 'P']
 
-        try_count += 1
-        time.sleep(2.5)
-        return geolocator.geocode(query).raw
-
+    return geocoder.geonames(query, key=geonames_username, featureClass=feature_classes, maxRows=1).json["raw"]
 
 def get_state_name(state_code):
     usStates = {}
@@ -151,6 +140,11 @@ def parse_location(location):
 
 
 def add_geonames_result(parsed_location, geonames_result):
+    logging.debug("Combining geo results. Parsed: {}\n GeoNames: {}".format(
+            parsed_location,
+            geonames_result
+        ))
+
     return {
         'location_id': parsed_location['location_id'],
         'name': parsed_location['full_name'],
