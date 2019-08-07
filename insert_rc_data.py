@@ -71,13 +71,14 @@ def insert_data(cursor, people):
 
     for person in people:
         person_id = person.get('id')
+        image_path = person.get('image_path')
+        image_url = image_path if ("no_photo" not in image_path) else None
 
-        logging.debug("Person #{}: {} {} {}; {}".format(
+        logging.debug("Person #{}: {} {} {}".format(
             person_id,
             person.get('first_name'),
             person.get('middle_name'),
-            person.get('last_name'),
-            person.get('image')
+            person.get('last_name')
         ))
         cursor.execute("INSERT INTO people" +
                        " (person_id, first_name, middle_name," +
@@ -87,7 +88,7 @@ def insert_data(cursor, people):
                         person.get('first_name'),
                         person.get('middle_name'),
                         person.get('last_name'),
-                        person.get('image_path')
+                        image_url
                         ]
                        )
 
