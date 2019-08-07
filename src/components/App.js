@@ -38,7 +38,8 @@ export default class App extends React.Component {
             this.setState({
                 locations: locationList,
                 selected: "",
-                mapLoading: false
+                mapLoading: false,
+                triggerFitBounds: true
             });
         });
     };
@@ -47,13 +48,13 @@ export default class App extends React.Component {
         this.setState({
             mapLoading: true
         });
-    }
+    };
 
     setSearchLoading = () => {
         this.setState({
             searchLoading: true
         });
-    }
+    };
 
     setSelectedLocation = location => {
         this.setSearchLoading();

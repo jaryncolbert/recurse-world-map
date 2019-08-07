@@ -8,21 +8,24 @@ export default class LocationClusterGroup extends React.Component {
         triggerPopup: false
     };
 
-    componentDidUpdate(prevProps) {
-        let { locations, fitBoundsFn, fitBoundsTriggered } = this.props;
-
-        if (
-            locations &&
-            locations.length > 0 &&
-            (fitBoundsTriggered ||
-                (!prevProps.locations || prevProps.locations.length === 0))
-        ) {
-            // Use underlying Leaflet getBounds() fn
-            // to find bounds of Markers in FeatureGroup
-            let groupBounds = this.refs.clusterGroupRef.leafletElement.getBounds();
-            fitBoundsFn(groupBounds);
+    componentDidMount() {
+        if (this.props.fitBoundsTriggered) {
+            this.fitBounds();
         }
     }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.fitBoundsTriggered && !prevProps.fitBoundsTriggered) {
+            this.fitBounds();
+        }
+    }
+
+    fitBounds = () => {
+        // Use underlying Leaflet getBounds() fn
+        // to find bounds of Markers in FeatureGroup
+        let groupBounds = this.refs.clusterGroupRef.leafletElement.getBounds();
+        this.props.fitBoundsFn(groupBounds);
+    };
 
     render() {
         let { locations, selected, fitBoundsFn, ...otherProps } = this.props;

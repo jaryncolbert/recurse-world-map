@@ -35,16 +35,28 @@ export default class LeafletMap extends React.Component {
     };
 
     componentDidUpdate(prevProps) {
-        const { fitBoundsTriggered } = this.props;
+        if (this.props.fitBoundsTriggered && !prevProps.fitBoundsTriggered) {
+            this.triggerFitBounds();
+        }
+    }
 
-        if (fitBoundsTriggered && !prevProps.fitBoundsTriggered) {
+    componentDidMount() {
+        if (this.props.fitBoundsTriggered) {
             this.triggerFitBounds();
         }
     }
 
     render() {
-        const { locations, selected, viewport, isLoading, ...otherProps } = this.props;
-        return isLoading ? <Spinner isLoading={isLoading} id="map-spinner"/> : (
+        const {
+            locations,
+            selected,
+            viewport,
+            isLoading,
+            ...otherProps
+        } = this.props;
+        return isLoading ? (
+            <Spinner isLoading={isLoading} id="map-spinner" />
+        ) : (
             <Map
                 {...otherProps}
                 ref="mapRef"
