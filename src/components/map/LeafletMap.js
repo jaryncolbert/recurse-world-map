@@ -8,21 +8,27 @@ import "react-leaflet-markercluster/dist/styles.min.css";
 import "../../css/map.css";
 
 export default class LeafletMap extends React.Component {
+    // Centered on Yaounde, Cameroon
+    DEFAULT_VIEWPORT = {
+        center: [3.846042, 11.502213],
+        zoom: 2.5
+    };
+
+    DEFAULT_PADDING = { padding: [50, 50] };
+
     state = {
         fitBoundsTriggered: false
     };
 
     fitBounds = bounds => {
-        const { onFitBounds, padding } = this.props;
-
         const mapElem = this.refs.mapRef.leafletElement;
 
-        mapElem.fitBounds(bounds, padding);
+        mapElem.fitBounds(bounds, this.DEFAULT_PADDING);
         this.setState({
             fitBoundsTriggered: false
         });
 
-        onFitBounds();
+        this.props.onFitBounds();
     };
 
     triggerFitBounds = () => {
@@ -44,21 +50,14 @@ export default class LeafletMap extends React.Component {
     }
 
     render() {
-        const {
-            locations,
-            selected,
-            viewport,
-            isLoading,
-            padding,
-            ...otherProps
-        } = this.props;
+        const { locations, selected, isLoading, ...otherProps } = this.props;
         return isLoading ? (
             <Spinner isLoading={isLoading} id="map-spinner" />
         ) : (
             <Map
                 {...otherProps}
                 ref="mapRef"
-                viewport={viewport}
+                viewport={this.DEFAULT_VIEWPORT}
                 zoomSnap="0.2"
                 maxZoom={11}>
                 <TileLayer
@@ -71,7 +70,7 @@ export default class LeafletMap extends React.Component {
                     maxClusterRadius="45"
                     locations={locations}
                     selected={selected}
-                    padding={padding}
+                    padding={this.DEFAULT_PADDING}
                 />
             </Map>
         );

@@ -5,17 +5,8 @@ import Search from "./search/Search";
 import { getRcLocations, getLocationData } from "../api";
 
 export default class App extends React.Component {
-    // Centered on Yaounde, Cameroon
-    DEFAULT_VIEWPORT = {
-        center: [3.846042, 11.502213],
-        zoom: 2.5
-    };
-
-    DEFAULT_PADDING = { padding: [50, 50] };
-
     state = {
         locations: [],
-        viewport: this.DEFAULT_VIEWPORT,
         selected: "",
         triggerClearInput: false,
         triggerFitBounds: false,
@@ -136,11 +127,9 @@ export default class App extends React.Component {
                         fitBoundsTriggered={this.state.triggerFitBounds}
                         onFitBounds={this.onFitBounds}
                         locations={this.state.locations}
-                        viewport={this.state.viewport}
                         selected={this.state.selected}
                         onClick={this.triggerClearInput}
                         isLoading={this.state.mapLoading}
-                        padding={this.DEFAULT_PADDING}
                     />
                 </div>
             </div>
