@@ -9,6 +9,7 @@ Click==7.0
 cryptography==2.6.1
 decorator==4.4.0
 Flask==1.0.2
+Flask-Login==0.4.1
 future==0.17.1
 geocoder==1.38.1
 geographiclib==1.49
