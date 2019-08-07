@@ -17,7 +17,7 @@ import json
 import logging
 import psycopg2
 import requests
-from geo_lookup import get_env_var
+from geocode_locations import get_env_var
 
 
 def get_people(token):
