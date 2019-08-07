@@ -2,6 +2,7 @@ import React from "react";
 import { Map, TileLayer } from "react-leaflet";
 
 import LocationClusterGroup from "./LocationClusterGroup";
+import Spinner from "../Spinner";
 
 import "react-leaflet-markercluster/dist/styles.min.css";
 import "../../css/map.css";
@@ -42,8 +43,8 @@ export default class LeafletMap extends React.Component {
     }
 
     render() {
-        const { locations, selected, viewport, ...otherProps } = this.props;
-        return (
+        const { locations, selected, viewport, isLoading, ...otherProps } = this.props;
+        return isLoading ? <Spinner isLoading={isLoading} id="map-spinner"/> : (
             <Map
                 {...otherProps}
                 ref="mapRef"
