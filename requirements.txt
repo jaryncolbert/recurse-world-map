@@ -7,9 +7,11 @@ cffi==1.12.2
 chardet==3.0.4
 Click==7.0
 cryptography==2.6.1
+decorator==4.4.0
 Flask==1.0.2
+future==0.17.1
+geocoder==1.38.1
 geographiclib==1.49
-geopy==1.20.0
 gunicorn==19.9.0
 idna==2.8
 isort==4.3.21
@@ -23,6 +25,7 @@ pycodestyle==2.5.0
 pycparser==2.19
 pylint==2.3.1
 python-dotenv==0.10.1
+ratelim==0.1.6
 requests==2.21.0
 six==1.12.0
 typed-ast==1.4.0
