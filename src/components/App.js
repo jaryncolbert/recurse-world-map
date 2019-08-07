@@ -16,7 +16,9 @@ export default class App extends React.Component {
         viewport: this.DEFAULT_VIEWPORT,
         selected: "",
         triggerClearInput: false,
-        triggerFitBounds: false
+        triggerFitBounds: false,
+        searchLoading: false,
+        mapLoading: false
     };
 
     componentDidMount() {
@@ -24,6 +26,8 @@ export default class App extends React.Component {
     }
 
     loadAllLocations = () => {
+        this.setMapLoading();
+
         getRcLocations().then(result => {
             let locationList = [];
             let i;
@@ -33,12 +37,27 @@ export default class App extends React.Component {
 
             this.setState({
                 locations: locationList,
-                selected: ""
+                selected: "",
+                mapLoading: false
             });
         });
     };
 
+    setMapLoading = () => {
+        this.setState({
+            mapLoading: true
+        });
+    }
+
+    setSearchLoading = () => {
+        this.setState({
+            searchLoading: true
+        });
+    }
+
     setSelectedLocation = location => {
+        this.setSearchLoading();
+
         getLocationData(location).then(result => {
             if (!result["location_id"]) {
                 throw Error(
@@ -57,7 +76,8 @@ export default class App extends React.Component {
 
                 this.setState({
                     locations: newLocations,
-                    selected: result["location_id"]
+                    selected: result["location_id"],
+                    searchLoading: false
                 });
             }
         });
@@ -104,6 +124,7 @@ export default class App extends React.Component {
                         clearInput={this.state.triggerClearInput}
                         onInputCleared={this.onInputCleared}
                         resetFn={this.resetSearch}
+                        isLoading={this.state.searchLoading}
                     />
                 </div>
 
@@ -115,6 +136,7 @@ export default class App extends React.Component {
                         viewport={this.state.viewport}
                         selected={this.state.selected}
                         onClick={this.triggerClearInput}
+                        isLoading={this.state.mapLoading}
                     />
                 </div>
             </div>
