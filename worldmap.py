@@ -97,13 +97,22 @@ def auth_recurse_callback():
         }), 403)
 
     me = rc.get('people/me', token=token).json()
+    session['recurse_user_id'] = me['id']
+    session['recurse_user'] = get_current_user()
+
     logging.info("Logged in: %s %s %s",
                  me.get('first_name', ''),
                  me.get('middle_name', ''),
                  me.get('last_name', ''))
 
-    session['recurse_user_id'] = me['id']
     return redirect(url_for('index'))
+
+
+def get_current_user():
+    if 'recurse_user' in session:
+        return session['recurse_user']
+
+    return None
 
 
 def needs_authorization(route):
@@ -111,23 +120,46 @@ def needs_authorization(route):
     exists for the current user."""
     @wraps(route)
     def wrapped_route(*args, **kwargs):
-        """Check the session, or return access denied."""
+        """Check the session, or return an error message."""
         if app.debug:
             return route(*args, **kwargs)
         elif 'recurse_user_id' in session:
             return route(*args, **kwargs)
+        elif 'redirect' in kwargs:
+            return redirect(url_for(kwargs['redirect']))
         else:
             return (jsonify({
-                'message': 'Access Denied',
-            }), 403)
+                'message': 'Login Required',
+            }), 401)
 
     return wrapped_route
 
 
-# @app.route('/api/locations/all')
+@app.route('/login')
 @needs_authorization
+def login():
+    return redirect(url_for('index'), 302)
+
+
+@app.route('/logout')
+def logout():
+    session.pop('recurse_user_id', None)
+    session.pop('recurse_user', None)
+    redirect(url_for('index'), 302)
+
+
+@app.route('/api/locations/unauthenticated')
 def get_all_rc_locations():
     cursor = connection.cursor()
+
+    # Query returns list of locations grouped in the format:
+    # {
+    #   location_id:
+    #   location_name:
+    #   lat:
+    #   lng:
+    #   has_rc_people: True
+    # }
 
     """Returns all locations in the database
     with their geolocation data."""
@@ -157,15 +189,16 @@ def get_all_rc_locations():
 
 @app.route('/api/locations/all')
 @needs_authorization
-def get_all_rc_locations_with_people():
+def get_all_rc_locations_with_people(redirect='get_all_rc_locations'):
     cursor = connection.cursor()
 
-    # Query returns list of locations grouped in the format: 
+    # Query returns list of locations grouped in the format:
     # {
-    #   location_id: 
+    #   location_id:
     #   location_name:
     #   lat:
-    #   lng: 
+    #   lng:
+    #   has_rc_people: True
     #   person_list: [
     #     {
     #        person_id:
@@ -192,7 +225,7 @@ def get_all_rc_locations_with_people():
                         lng,
                         person_list
                       FROM geolocations_people_and_stints_agg""")
-    
+
     locations = [{
         'location_id': x[0],
         'location_name': x[1],
@@ -227,9 +260,10 @@ def locations_search():
 
 
 @app.route('/api/locations/<int:id>')
-@needs_authorization
 def get_location(id):
     cursor = connection.cursor()
+
+    is_logged_in = bool(get_current_user())
 
     # If location is aliased to another location, find preferred location
     preferred_id = get_alias(cursor, id)
@@ -238,8 +272,14 @@ def get_location(id):
 
     # If geolocation data exists with people affiliated, return it
     location = get_geolocation_with_people(cursor, id)
-    if (location):
+    if (location and is_logged_in):
         return jsonify(location)
+
+    # If user isn't logged in, conceal person_list
+    elif (location):
+        return jsonify({
+            key: location[key]
+        } for key in ["location_id", "location_name", "lat", "lng", "has_rc_people"])
 
     # Else lookup existing geolocation info, and then return it
     location = get_geolocation(cursor, id)
@@ -293,7 +333,7 @@ def get_alias(cursor, location_id):
     logging.info("Select Alias for Location ID #{}".format(
         location_id
     ))
-    """Returns the preferred location alias for the location 
+    """Returns the preferred location alias for the location
         with the given id if an alias exists."""
     cursor.execute("""SELECT
                         preferred_location_id
@@ -334,8 +374,8 @@ def insert_location(cursor, location):
     ))
     cursor.execute("INSERT INTO locations" +
                    " (location_id, name, short_name)" +
-                   " VALUES (%s, %s, %s) " + 
-                   " ON CONFLICT ON CONSTRAINT locations_pkey " + 
+                   " VALUES (%s, %s, %s) " +
+                   " ON CONFLICT ON CONSTRAINT locations_pkey " +
                    " DO NOTHING ",
                    [location.get('id'),
                     location.get('name'),
