@@ -160,12 +160,12 @@ def get_all_rc_locations():
 def get_all_rc_locations_with_people():
     cursor = connection.cursor()
 
-    # Query returns list of locations grouped in the format: 
+    # Query returns list of locations grouped in the format:
     # {
-    #   location_id: 
+    #   location_id:
     #   location_name:
     #   lat:
-    #   lng: 
+    #   lng:
     #   person_list: [
     #     {
     #        person_id:
@@ -192,7 +192,7 @@ def get_all_rc_locations_with_people():
                         lng,
                         person_list
                       FROM geolocations_people_and_stints_agg""")
-    
+
     locations = [{
         'location_id': x[0],
         'location_name': x[1],
@@ -334,8 +334,8 @@ def insert_location(cursor, location):
     ))
     cursor.execute("INSERT INTO locations" +
                    " (location_id, name, short_name)" +
-                   " VALUES (%s, %s, %s) " + 
-                   " ON CONFLICT ON CONSTRAINT locations_pkey " + 
+                   " VALUES (%s, %s, %s) " +
+                   " ON CONFLICT ON CONSTRAINT locations_pkey " +
                    " DO NOTHING ",
                    [location.get('id'),
                     location.get('name'),
