@@ -67,6 +67,8 @@ body {
 }
 
 .location-input {
+    margin-left: 3%;
+    padding-left: 0px;
     max-width: 75%;
 }
 

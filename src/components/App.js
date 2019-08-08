@@ -111,16 +111,13 @@ export default class App extends React.Component {
     render() {
         return (
             <div className="App">
-                <div className="header-search">
-                    <h1>World of Recursers</h1>
-                    <Search
-                        searchCompletedFn={this.setSelectedLocation}
-                        clearInput={this.state.triggerClearInput}
-                        onInputCleared={this.onInputCleared}
-                        resetFn={this.resetSearch}
-                        isLoading={this.state.searchLoading}
-                    />
-                </div>
+                <Search
+                    searchCompletedFn={this.setSelectedLocation}
+                    clearInput={this.state.triggerClearInput}
+                    onInputCleared={this.onInputCleared}
+                    resetFn={this.resetSearch}
+                    isLoading={this.state.searchLoading}
+                />
 
                 <div id="recurse-map">
                     <LeafletMap

@@ -1,6 +1,6 @@
 .leaflet-container {
-    height: 100%;
-    width: 90%;
+    height: 90%;
+    width: 98%;
     margin: 0 auto;
     z-index: 10;
     top: 0px;
@@ -79,7 +79,7 @@
     flex-direction: column;
     width: 100%;
     justify-content: center;
-    align-items:center;
+    align-items: center;
     padding-top: 3em;
 }
 
