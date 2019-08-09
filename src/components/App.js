@@ -3,7 +3,6 @@ import LeafletMap from "./map/LeafletMap";
 import Search from "./search/Search";
 
 import { getRcLocations, getLocationData } from "../api";
-import LoginButton from "./login/LoginButton";
 
 export default class App extends React.Component {
     state = {
@@ -120,11 +119,6 @@ export default class App extends React.Component {
                         onInputCleared={this.onInputCleared}
                         resetFn={this.resetSearch}
                         isLoading={this.state.searchLoading}
-                    />
-                    <LoginButton
-                        loginFn={() => null}
-                        logoutFn={() => null}
-                        isLoggedIn={true}
                     />
                 </div>
 
