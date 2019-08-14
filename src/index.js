@@ -1,13 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {
-    Route,
-    Link,
-    Redirect,
-    BrowserRouter as Router,
-    withRouter
-} from "react-router-dom";
+import { Route, BrowserRouter as Router } from "react-router-dom";
 import * as serviceWorker from "./serviceWorker";
+
+import { Login, Logout } from "./components/home/Authenticator";
 
 import App from "./components/home/App";
 import Navbar from "./components/home/Navbar";
@@ -22,6 +18,8 @@ const router = (
     <Router basename="/">
         <Navbar />
         <Route exact path="/" component={App} />
+        <Route exact path="/login" component={Login} />
+        <Route exact path="/logout" component={Logout} />
         <Footer />
     </Router>
 );

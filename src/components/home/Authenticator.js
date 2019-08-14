@@ -1,6 +1,7 @@
 import React from "react";
+import { Redirect, withRouter } from "react-router-dom";
 
-import { getCurrentUser } from "../../api";
+import { getCurrentUser, login, logout } from "../../api";
 
 export default function withAuth(WrappedComponent) {
     return class Authenticator extends React.Component {
@@ -38,3 +39,24 @@ export default function withAuth(WrappedComponent) {
         }
     };
 }
+
+function LoginAuthRequired() {
+    login().then(result => {
+        console.log("Login result ", result);
+        return <Redirect to="/" />;
+    });
+
+    return null;
+}
+
+function LogoutAuthRequired() {
+    logout().then(result => {
+        console.log("Logout result ", result);
+        return <Redirect to="/" />;
+    });
+
+    return null;
+}
+
+export const Login = withRouter(LoginAuthRequired);
+export const Logout = withRouter(LogoutAuthRequired);

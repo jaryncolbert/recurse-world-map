@@ -76,7 +76,7 @@ function NavBrand() {
 
 function AuthButtonAuthRequired({ isAuthenticated }) {
     const text = isAuthenticated ? "Logout" : "Login";
-    const path = isAuthenticated ? "/auth/logout" : "/auth/recurse";
+    const path = isAuthenticated ? "/logout" : "/login";
 
     return <NavListItem path={path} text={text} />;
 }
