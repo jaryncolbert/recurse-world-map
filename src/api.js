@@ -46,3 +46,19 @@ export function getLocationData(location) {
         "Location lookup results "
     );
 }
+
+export function getCurrentUser() {
+    return localFetch(
+        `API: Get current user`,
+        `/api/people/me`,
+        "Current user "
+    );
+}
+
+export function login() {
+    return localFetch(`API: Login`, `/auth/recurse`, "Login result ");
+}
+
+export function logout() {
+    return localFetch(`API: Logout`, `/auth/logout`, "Logout result ");
+}
