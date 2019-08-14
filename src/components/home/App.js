@@ -1,46 +1,15 @@
 import React from "react";
-import LeafletMap from "../map/LeafletMap";
+import Map from "../map/Map";
 import Search from "../search/Search";
 
-import { getRcLocations, getLocationData } from "../../api";
+import { getLocationData } from "../../api";
 
 export default class App extends React.Component {
     state = {
-        locations: [],
         selected: "",
         triggerClearInput: false,
         triggerFitBounds: false,
-        searchLoading: false,
-        mapLoading: false
-    };
-
-    componentDidMount() {
-        this.loadAllLocations();
-    }
-
-    loadAllLocations = () => {
-        this.setMapLoading();
-
-        getRcLocations().then(result => {
-            let locationList = [];
-            let i;
-            for (i in result) {
-                locationList.push(result[i]);
-            }
-
-            this.setState({
-                locations: locationList,
-                selected: "",
-                mapLoading: false,
-                triggerFitBounds: true
-            });
-        });
-    };
-
-    setMapLoading = () => {
-        this.setState({
-            mapLoading: true
-        });
+        searchLoading: false
     };
 
     setSearchLoading = () => {
@@ -79,7 +48,6 @@ export default class App extends React.Component {
 
     resetSearch = () => {
         this.triggerClearInput();
-        this.loadAllLocations();
         this.triggerFitBounds();
     };
 
@@ -118,17 +86,12 @@ export default class App extends React.Component {
                     resetFn={this.resetSearch}
                     isLoading={this.state.searchLoading}
                 />
-
-                <div id="recurse-map">
-                    <LeafletMap
-                        fitBoundsTriggered={this.state.triggerFitBounds}
-                        onFitBounds={this.onFitBounds}
-                        locations={this.state.locations}
-                        selected={this.state.selected}
-                        onClick={this.triggerClearInput}
-                        isLoading={this.state.mapLoading}
-                    />
-                </div>
+                <Map
+                    fitBoundsTriggered={this.state.triggerFitBounds}
+                    onFitBounds={this.onFitBounds}
+                    selected={this.state.selected}
+                    onClick={this.triggerClearInput}
+                />
             </div>
         );
     }

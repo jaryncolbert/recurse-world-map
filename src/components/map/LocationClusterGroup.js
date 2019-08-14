@@ -43,18 +43,19 @@ export default class LocationClusterGroup extends React.Component {
                 onClusterClick={cluster => cluster.zoomToBounds(padding)}
                 {...otherProps}
                 iconCreateFunction={this.clusterGroupIcon}>
-                {locations.map(loc => {
-                    return (
-                        <LocationMarker
-                            key={loc["location_id"]}
-                            location={loc}
-                            zoomToShowMarkerFn={this.zoomToMarker}
-                            isSelected={selected === loc["location_id"]}
-                            isVisible={this.state.triggerPopup}
-                            onPopupDisplayedFn={this.onPopupDisplayed}
-                        />
-                    );
-                })}
+                {locations &&
+                    locations.map(loc => {
+                        return (
+                            <LocationMarker
+                                key={loc["location_id"]}
+                                location={loc}
+                                zoomToShowMarkerFn={this.zoomToMarker}
+                                isSelected={selected === loc["location_id"]}
+                                isVisible={this.state.triggerPopup}
+                                onPopupDisplayedFn={this.onPopupDisplayed}
+                            />
+                        );
+                    })}
             </MarkerClusterGroup>
         );
     }

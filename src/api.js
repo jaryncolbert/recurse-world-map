@@ -18,10 +18,18 @@ export function localFetch(beforeFetchMsg, url, responseMsg) {
         });
 }
 
-export function getRcLocations() {
+export function getPrivateRcLocations() {
     return localFetch(
-        "API: Get all geolocation data",
-        "/api/locations/all",
+        "API: Get all geolocation data (authenticated)",
+        "/api/locations/private",
+        "Geolocation Data: "
+    );
+}
+
+export function getPublicRcLocations() {
+    return localFetch(
+        "API: Get all public geolocation data",
+        "/api/locations/public",
         "Geolocation Data: "
     );
 }
