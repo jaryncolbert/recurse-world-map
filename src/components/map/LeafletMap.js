@@ -2,7 +2,7 @@ import React from "react";
 import { Map, TileLayer } from "react-leaflet";
 
 import LocationClusterGroup from "./LocationClusterGroup";
-import Spinner from "../Spinner";
+import Spinner from "../home/Spinner";
 
 import "react-leaflet-markercluster/dist/styles.min.css";
 import "../../css/map.css";

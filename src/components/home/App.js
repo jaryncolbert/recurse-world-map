@@ -1,8 +1,8 @@
 import React from "react";
-import LeafletMap from "./map/LeafletMap";
-import Search from "./search/Search";
+import LeafletMap from "../map/LeafletMap";
+import Search from "../search/Search";
 
-import { getRcLocations, getLocationData } from "../api";
+import { getRcLocations, getLocationData } from "../../api";
 
 export default class App extends React.Component {
     state = {

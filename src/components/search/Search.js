@@ -1,7 +1,7 @@
 import React from "react";
 import ResetButton from "./ResetButton";
 import LocationInput from "./LocationInput";
-import Spinner from "../Spinner";
+import Spinner from "../home/Spinner";
 
 import "../../css/search.css";
 
@@ -22,7 +22,7 @@ export default function Search({
                     resetFn={resetFn}
                 />
                 <ResetButton resetFn={resetFn} />
-                <Spinner isLoading={isLoading} id="search-spinner"/>
+                <Spinner isLoading={isLoading} id="search-spinner" />
             </div>
         </div>
     );
