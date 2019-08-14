@@ -39,6 +39,7 @@ rc = OAuth(app).register(
     api_base_url='https://www.recurse.com/api/v1/',
     authorize_url='https://www.recurse.com/oauth/authorize',
     access_token_url='https://www.recurse.com/oauth/token',
+    refresh_token_url='https://www.recurse.com/oauth/token',
     client_id=get_env_var('CLIENT_ID'),
     client_secret=get_env_var('CLIENT_SECRET'),
 )
@@ -81,7 +82,6 @@ def auth_recurse_redirect():
 @app.route('/auth/recurse/callback', methods=['GET', 'POST'])
 def auth_recurse_callback():
     "Process the results of a successful OAuth2 authentication"
-
     try:
         token = rc.authorize_access_token()
     except HTTPException:
@@ -98,7 +98,11 @@ def auth_recurse_callback():
 
     me = rc.get('people/me', token=token).json()
     session['recurse_user_id'] = me['id']
-    session['recurse_user'] = get_current_user()
+    session['recurse_user'] = {
+        'id': me['id'],
+        'first_name': me['first_name'],
+        'image_url': me['image_path']
+    }
 
     logging.info("Logged in: %s %s %s",
                  me.get('first_name', ''),
@@ -108,11 +112,9 @@ def auth_recurse_callback():
     return redirect(url_for('index'))
 
 
-def get_current_user():
-    if 'recurse_user' in session:
-        return session['recurse_user']
-
-    return None
+def is_logged_in():
+    curr_user = current_user()
+    return bool(curr_user["id"]) if curr_user and curr_user["id"] else False
 
 
 def needs_authorization(route):
@@ -126,8 +128,10 @@ def needs_authorization(route):
         elif 'recurse_user_id' in session:
             return route(*args, **kwargs)
         elif 'redirect' in kwargs:
+            print("Authorization redirect")
             return redirect(url_for(kwargs['redirect']))
         else:
+            print("Login required")
             return (jsonify({
                 'message': 'Login Required',
             }), 401)
@@ -135,21 +139,35 @@ def needs_authorization(route):
     return wrapped_route
 
 
-@app.route('/login')
+@app.route('/api/people/me')
 @needs_authorization
-def login():
-    return redirect(url_for('index'), 302)
+def get_current_user():
+    return jsonify(current_user())
 
 
-@app.route('/logout')
+def current_user():
+    print("Inside curr user")
+    if 'recurse_user' in session:
+        print("recurse_user in session")
+        return session['recurse_user']
+    if 'recurse_user_id' in session:
+        print("recurse_user_id in session")
+        return {"id": session['recurse_user_id']}
+    else:
+        print("Nothin in session")
+        return {}
+
+
+@app.route('/auth/logout')
 def logout():
+    print("Flask - Logout")
     session.pop('recurse_user_id', None)
     session.pop('recurse_user', None)
     redirect(url_for('index'), 302)
 
 
-@app.route('/api/locations/unauthenticated')
-def get_all_rc_locations():
+@app.route('/api/locations/public')
+def get_rc_locations():
     cursor = connection.cursor()
 
     # Query returns list of locations grouped in the format:
@@ -187,10 +205,12 @@ def get_all_rc_locations():
     return jsonify(locations)
 
 
-@app.route('/api/locations/all')
+@app.route('/api/locations/private')
 @needs_authorization
-def get_all_rc_locations_with_people(redirect='get_all_rc_locations'):
+def get_rc_locations_with_people():
     cursor = connection.cursor()
+
+    print("All locations, curr user: ", current_user())
 
     # Query returns list of locations grouped in the format:
     # {
@@ -263,23 +283,27 @@ def locations_search():
 def get_location(id):
     cursor = connection.cursor()
 
-    is_logged_in = bool(get_current_user())
+    print("Get location with id ", id, ", Logged in? ", is_logged_in())
 
     # If location is aliased to another location, find preferred location
     preferred_id = get_alias(cursor, id)
     if (preferred_id):
         id = preferred_id
+        print("Location aliased to ", id)
 
     # If geolocation data exists with people affiliated, return it
     location = get_geolocation_with_people(cursor, id)
-    if (location and is_logged_in):
+    if (location and is_logged_in()):
         return jsonify(location)
 
     # If user isn't logged in, conceal person_list
     elif (location):
         return jsonify({
-            key: location[key]
-        } for key in ["location_id", "location_name", "lat", "lng", "has_rc_people"])
+            "location_id": location["location_id"],
+            "lat": location["lat"],
+            "lng": location["lng"],
+            "has_rc_people": location["has_rc_people"]
+        })
 
     # Else lookup existing geolocation info, and then return it
     location = get_geolocation(cursor, id)
