@@ -7,6 +7,7 @@ function withLocationsAuthRequired(WrappedComponent) {
     return class LocationProvider extends React.Component {
         state = {
             locations: [],
+            locationsHash: {},
             locationsLoading: false,
             locationsLoaded: false
         };
@@ -19,10 +20,30 @@ function withLocationsAuthRequired(WrappedComponent) {
             if (!prevProps.triggerReload && this.props.triggerReload) {
                 this.loadLocations();
             }
+
+            const selectedLocation = this.props.selectedLocation;
+            if (!prevProps.selectedLocation && selectedLocation) {
+                const id = selectedLocation["location_id"].toString();
+                if (!this.state.locationsHash[id]) {
+                    let newLocations = this.state.locations.slice();
+                    newLocations.unshift(selectedLocation);
+
+                    const newHash = Object.assign(this.state.locationsHash, {
+                        [id]: selectedLocation
+                    });
+
+                    this.setState({
+                        locations: newLocations,
+                        locationsHash: newHash
+                    });
+                }
+            }
         }
 
         setLocationsLoading = () => {
             this.setState({
+                locationsHash: {},
+                locations: [],
                 locationsLoading: true,
                 locationsLoaded: false
             });
@@ -37,13 +58,17 @@ function withLocationsAuthRequired(WrappedComponent) {
 
             getLocations().then(result => {
                 let locationList = [];
-                let i;
-                for (i in result) {
+                let locationsHash = {};
+
+                for (let i in result) {
+                    const locationId = result[i]["location_id"].toString();
+                    locationsHash[locationId] = result[i];
                     locationList.push(result[i]);
                 }
 
                 this.setState({
                     locations: locationList,
+                    locationsHash: locationsHash,
                     locationsLoading: false,
                     locationsLoaded: true
                 });
@@ -51,9 +76,15 @@ function withLocationsAuthRequired(WrappedComponent) {
         };
 
         render() {
+            const { selectedLocation, ...otherProps } = this.props;
+            const selected = selectedLocation
+                ? selectedLocation["location_id"]
+                : "";
+
             return (
                 <WrappedComponent
-                    {...this.props}
+                    {...otherProps}
+                    selected={selected}
                     locations={this.state.locations}
                     locationsLoading={this.state.locationsLoading}
                     locationsLoaded={this.state.locationsLoaded}

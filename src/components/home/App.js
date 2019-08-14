@@ -6,7 +6,6 @@ import { getLocationData } from "../../api";
 
 export default class App extends React.Component {
     state = {
-        selected: "",
         triggerClearInput: false,
         triggerFitBounds: false,
         searchLoading: false
@@ -14,7 +13,8 @@ export default class App extends React.Component {
 
     setSearchLoading = () => {
         this.setState({
-            searchLoading: true
+            searchLoading: true,
+            selected: null
         });
     };
 
@@ -29,17 +29,8 @@ export default class App extends React.Component {
                     } ${location["name"]}`
                 );
             } else {
-                const newLocations = this.state.locations.slice();
-                if (
-                    !result["person_list"] ||
-                    result["person_list"].length === 0
-                ) {
-                    newLocations.push(result);
-                }
-
                 this.setState({
-                    locations: newLocations,
-                    selected: result["location_id"],
+                    selected: result,
                     searchLoading: false
                 });
             }
@@ -60,7 +51,7 @@ export default class App extends React.Component {
     onInputCleared = () => {
         this.setState({
             triggerClearInput: false,
-            selected: ""
+            selected: null
         });
     };
 
@@ -89,7 +80,7 @@ export default class App extends React.Component {
                 <Map
                     fitBoundsTriggered={this.state.triggerFitBounds}
                     onFitBounds={this.onFitBounds}
-                    selected={this.state.selected}
+                    selectedLocation={this.state.selected}
                     onClick={this.triggerClearInput}
                 />
             </div>
