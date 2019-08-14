@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-import { getCurrentUser } from "../../api";
+import withAuth from "./Authenticator";
 
 import MapIcon from "../../assets/map-icon-192x192.png";
 
@@ -74,10 +74,11 @@ function NavBrand() {
     );
 }
 
-function AuthButton() {
-    const isLoggedIn = !!getCurrentUser()["id"];
-    const text = isLoggedIn ? "Logout" : "Login";
-    const path = isLoggedIn ? "/auth/logout" : "/auth/recurse";
+function AuthButtonAuthRequired({ isAuthenticated }) {
+    const text = isAuthenticated ? "Logout" : "Login";
+    const path = isAuthenticated ? "/auth/logout" : "/auth/recurse";
 
     return <NavListItem path={path} text={text} />;
 }
+
+const AuthButton = withAuth(AuthButtonAuthRequired);

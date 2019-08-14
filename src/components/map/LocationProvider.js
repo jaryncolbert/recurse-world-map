@@ -1,13 +1,10 @@
 import React from "react";
 
-import {
-    getPrivateRcLocations,
-    getPublicRcLocations,
-    getCurrentUser
-} from "../../api";
+import { getPrivateRcLocations, getPublicRcLocations } from "../../api";
+import withAuth from "../home/Authenticator";
 
-export default function withLocations(WrappedComponent) {
-    return class extends React.Component {
+function withLocationsAuthRequired(WrappedComponent) {
+    return class LocationProvider extends React.Component {
         state = {
             locations: [],
             locationsLoading: false,
@@ -31,30 +28,10 @@ export default function withLocations(WrappedComponent) {
             });
         };
 
-        isAuthenticated = () => {
-            const unauthenticatedMsg = "User is unauthenticated";
-
-            getCurrentUser().then(result => {
-                const isAuthenticated = !!result["id"];
-
-                const authMsg = isAuthenticated
-                    ? `Authenticated as user ${result["id"]} - ${
-                          result["first_name"]
-                      }`
-                    : unauthenticatedMsg;
-                console.log(authMsg);
-
-                return isAuthenticated;
-            });
-
-            console.log(unauthenticatedMsg);
-            return false;
-        };
-
         loadLocations = () => {
             this.setLocationsLoading();
 
-            const getLocations = this.isAuthenticated()
+            const getLocations = this.props.isAuthenticated
                 ? getPrivateRcLocations
                 : getPublicRcLocations;
 
@@ -85,3 +62,8 @@ export default function withLocations(WrappedComponent) {
         }
     };
 }
+
+const withLocations = Component =>
+    withAuth(withLocationsAuthRequired(Component));
+
+export default withLocations;
