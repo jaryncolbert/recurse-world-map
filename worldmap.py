@@ -137,7 +137,6 @@ def needs_authorization(route):
 
 
 @app.route('/api/people/me')
-@needs_authorization
 def get_current_user():
     return jsonify(current_user())
 

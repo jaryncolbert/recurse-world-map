@@ -5,6 +5,7 @@ export function localFetch(beforeFetchMsg, url, responseMsg) {
         accept: "application/json"
     })
         .then(response => {
+            console.log("Api response: ", response.json());
             return response.json();
         })
         .then(responseJson => {
