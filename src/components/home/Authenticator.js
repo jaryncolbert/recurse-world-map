@@ -5,42 +5,44 @@ import { getCurrentUser, login, logout } from "../../api";
 
 export default function withAuth(WrappedComponent) {
     return class Authenticator extends React.Component {
-        currentUser = () => {
-            let user = {};
+        state = {
+            isAuthenticated: false,
+            currentUser: {}
+        };
 
+        authenticate = () => {
             getCurrentUser().then(result => {
-                user = result;
+                if (result && result["id"]) {
+                    console.log(
+                        `Authenticated as user ${result["id"]} - ${
+                            result["first_name"]
+                        }`
+                    );
+
+                    this.setState({
+                        isAuthenticated: true,
+                        currentUser: result
+                    });
+                }
             });
-
-            console.log(
-                "Current user: ",
-                user,
-                " Authenticated: ",
-                !!user["first_name"]
-            );
-            return user;
         };
 
-        isAuthenticated = () => {
-            const currUser = this.currentUser();
-            const isAuthenticated = !!currUser["first_name"];
+        componentDidMount() {
+            console.log("Authenticator Mounted");
+            this.authenticate();
+        }
 
-            const authMsg = isAuthenticated
-                ? `Authenticated as user ${currUser["id"]} - ${
-                      currUser["first_name"]
-                  }`
-                : "User is unauthenticated";
-            console.log(authMsg);
-
-            return isAuthenticated;
-        };
+        componentDidUpdate() {
+            console.log("Authenticator Updated");
+            this.authenticate();
+        }
 
         render() {
             return (
                 <WrappedComponent
                     {...this.props}
-                    isAuthenticated={this.isAuthenticated()}
-                    currUser={this.currentUser()}
+                    isAuthenticated={this.state.isAuthenticated}
+                    currUser={this.state.currentUser}
                 />
             );
         }
@@ -49,7 +51,13 @@ export default function withAuth(WrappedComponent) {
 
 function LoginAuthRequired() {
     login().then(result => {
-        console.log("Login result ", result);
+        if (result && result["id"]) {
+            this.setState({
+                isAuthenticated: true,
+                currentUser: result
+            });
+        }
+
         return <Redirect to="/" />;
     });
 
@@ -58,7 +66,11 @@ function LoginAuthRequired() {
 
 function LogoutAuthRequired() {
     logout().then(result => {
-        console.log("Logout result ", result);
+        this.setState({
+            isAuthenticated: false,
+            currentUser: {}
+        });
+
         return <Redirect to="/" />;
     });
 
