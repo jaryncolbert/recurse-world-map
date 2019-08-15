@@ -12,6 +12,12 @@ export default function withAuth(WrappedComponent) {
                 user = result;
             });
 
+            console.log(
+                "Current user: ",
+                user,
+                " Authenticated: ",
+                !!user["first_name"]
+            );
             return user;
         };
 
