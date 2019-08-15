@@ -114,7 +114,7 @@ def auth_recurse_callback():
 
 def is_logged_in():
     curr_user = current_user()
-    return bool(curr_user["id"]) if curr_user and curr_user["id"] else False
+    return curr_user and curr_user["id"]
 
 
 def needs_authorization(route):
@@ -127,9 +127,6 @@ def needs_authorization(route):
             return route(*args, **kwargs)
         elif 'recurse_user_id' in session:
             return route(*args, **kwargs)
-        elif 'redirect' in kwargs:
-            print("Authorization redirect")
-            return redirect(url_for(kwargs['redirect']))
         else:
             print("Login required")
             return (jsonify({
@@ -156,6 +153,13 @@ def current_user():
     else:
         print("Nothin in session")
         return {}
+
+
+@app.route('/auth/login')
+@needs_authorization
+def login():
+    print("Flask - Login")
+    redirect(url_for('index'), 302)
 
 
 @app.route('/auth/logout')
