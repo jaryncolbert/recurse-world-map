@@ -5,10 +5,11 @@ export function localFetch(beforeFetchMsg, url, responseMsg) {
         accept: "application/json"
     })
         .then(response => {
-            console.log("Api response: ", response.json());
             return response.json();
         })
         .then(responseJson => {
+            console.log("Response json: ", responseJson);
+
             if (responseJson.message === "Access Denied") {
                 console.log("Access denied!");
                 window.location.pathname = "auth/recurse";
