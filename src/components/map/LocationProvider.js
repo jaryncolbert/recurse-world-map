@@ -17,7 +17,10 @@ function withLocationsAuthRequired(WrappedComponent) {
         }
 
         componentDidUpdate(prevProps) {
-            if (!prevProps.triggerReload && this.props.triggerReload) {
+            if (
+                (!prevProps.triggerReload && this.props.triggerReload) ||
+                prevProps.isAuthenticated !== this.props.isAuthenticated
+            ) {
                 this.loadLocations();
             }
 

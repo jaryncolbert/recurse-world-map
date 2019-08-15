@@ -45,6 +45,7 @@ rc = OAuth(app).register(
 )
 
 connection = psycopg2.connect(get_env_var('DATABASE_URL'))
+token = None
 
 
 @app.route('/')
@@ -89,7 +90,7 @@ def login_with_access_token():
     url = 'https://www.recurse.com/api/v1/profiles/me'
 
     r = session.get(url)
-    if r.status_code != requests.codes["200"]:
+    if r.status_code != requests.codes['ok']:
         r.raise_for_status()
 
     return login(r.json())
