@@ -130,8 +130,8 @@ def needs_authorization(route):
             print("Login required")
             return (jsonify({
                 'message': 'Login Required',
-                'status': 403
-            }), 403)
+                'status': 401
+            }), 401)
 
     return wrapped_route
 
