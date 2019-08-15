@@ -8,10 +8,8 @@ export function localFetch(beforeFetchMsg, url, responseMsg) {
             return response.json();
         })
         .then(responseJson => {
-            console.log("Response json: ", responseJson);
-
-            if (responseJson.message === "Access Denied") {
-                console.log("Access denied!");
+            if (responseJson.status === 401) {
+                console.log(responseJson.message);
                 window.location.pathname = "auth/recurse";
             } else {
                 console.log(responseMsg, responseJson);
@@ -66,7 +64,7 @@ export function getCurrentUser() {
 }
 
 export function login() {
-    return localFetch(`API: Login`, `/auth/recurse`, "Login result ");
+    return localFetch(`API: Login`, `/auth/login`, "Login result ");
 }
 
 export function logout() {

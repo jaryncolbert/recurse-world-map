@@ -131,6 +131,7 @@ def needs_authorization(route):
             print("Login required")
             return (jsonify({
                 'message': 'Login Required',
+                'status': 401
             }), 401)
 
     return wrapped_route
@@ -154,12 +155,19 @@ def current_user():
         return {}
 
 
+@app.route('/auth/login')
+@needs_authorization
+def login():
+    print("Flask - Login")
+    return redirect(url_for('index'))
+
+
 @app.route('/auth/logout')
 def logout():
     print("Flask - Logout")
     session.pop('recurse_user_id', None)
     session.pop('recurse_user', None)
-    redirect(url_for('index'))
+    return redirect(url_for('index'))
 
 
 @app.route('/api/locations/public')
