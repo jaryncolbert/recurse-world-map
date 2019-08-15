@@ -64,7 +64,7 @@ export function getCurrentUser() {
 }
 
 export function login() {
-    return localFetch(`API: Login`, `/auth/login`, "Login result ");
+    return localFetch(`API: Login`, `/auth/recurse`, "Login result ");
 }
 
 export function logout() {

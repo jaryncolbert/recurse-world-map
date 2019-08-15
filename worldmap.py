@@ -155,19 +155,12 @@ def current_user():
         return {}
 
 
-@app.route('/auth/login')
-@needs_authorization
-def login():
-    print("Flask - Login")
-    redirect(url_for('index'), 302)
-
-
 @app.route('/auth/logout')
 def logout():
     print("Flask - Logout")
     session.pop('recurse_user_id', None)
     session.pop('recurse_user', None)
-    redirect(url_for('index'), 302)
+    redirect(url_for('index'))
 
 
 @app.route('/api/locations/public')
