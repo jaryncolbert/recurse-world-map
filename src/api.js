@@ -9,10 +9,8 @@ export function localFetch(beforeFetchMsg, url, responseMsg) {
         })
         .then(responseJson => {
             if (responseJson.status === 401) {
-                console.log(responseJson.message);
                 window.location.pathname = "auth/recurse";
             } else {
-                console.log(responseMsg, responseJson);
                 return responseJson;
             }
         });
@@ -64,7 +62,7 @@ export function getCurrentUser() {
 }
 
 export function login() {
-    return localFetch(`API: Login`, `/auth/login`, "Login result ");
+    return localFetch(`API: Login`, `/auth/recurse`, "Login result ");
 }
 
 export function logout() {

@@ -27,13 +27,19 @@ export default function withAuth(WrappedComponent) {
             });
         };
 
-        componentDidMount() {
-            console.log("Authenticator Mounted");
-            this.authenticate();
-        }
+        logout = () => {
+            this.setState({
+                isAuthenticated: false,
+                currentUser: {}
+            });
+        };
 
-        componentDidUpdate() {
-            console.log("Authenticator Updated");
+        isAuthenticated = () => {
+            this.authenticate();
+            return this.state.isAuthenticated;
+        };
+
+        componentDidMount() {
             this.authenticate();
         }
 
@@ -41,6 +47,8 @@ export default function withAuth(WrappedComponent) {
             return (
                 <WrappedComponent
                     {...this.props}
+                    checkAuthentication={this.authenticate}
+                    logoutCallback={this.logout}
                     isAuthenticated={this.state.isAuthenticated}
                     currUser={this.state.currentUser}
                 />
@@ -49,33 +57,20 @@ export default function withAuth(WrappedComponent) {
     };
 }
 
-function LoginAuthRequired() {
+function LoginAuthRequired({ checkAuthentication }) {
     login().then(result => {
-        if (result && result["id"]) {
-            this.setState({
-                isAuthenticated: true,
-                currentUser: result
-            });
-        }
-
-        return <Redirect to="/" />;
+        checkAuthentication();
     });
-
-    return null;
+    return <Redirect to="/" />;
 }
 
-function LogoutAuthRequired() {
+function LogoutAuthRequired({ logoutCallback }) {
     logout().then(result => {
-        this.setState({
-            isAuthenticated: false,
-            currentUser: {}
-        });
-
-        return <Redirect to="/" />;
+        logoutCallback();
     });
 
-    return null;
+    return <Redirect to="/" />;
 }
 
-export const Login = withRouter(LoginAuthRequired);
-export const Logout = withRouter(LogoutAuthRequired);
+export const Login = withRouter(withAuth(LoginAuthRequired));
+export const Logout = withRouter(withAuth(LogoutAuthRequired));

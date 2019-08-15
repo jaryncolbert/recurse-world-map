@@ -45,7 +45,6 @@ rc = OAuth(app).register(
 )
 
 connection = psycopg2.connect(get_env_var('DATABASE_URL'))
-token = get_env_var('RC_API_ACCESS_TOKEN')
 
 
 @app.route('/')
@@ -74,9 +73,26 @@ def static_file(path):
 
 @app.route('/auth/recurse')
 def auth_recurse_redirect():
-    "Redirect to the Recurse Center OAuth2 endpoint"
-    callback = get_env_var('CLIENT_CALLBACK')
-    return rc.authorize_redirect(callback)
+    if (get_env_var('FLASK_ENV') == 'development'):
+        "Use RC API Access Token to get current user"
+        return login_with_access_token()
+    else:
+        "Redirect to the Recurse Center OAuth2 endpoint"
+        callback = get_env_var('CLIENT_CALLBACK')
+        return rc.authorize_redirect(callback)
+
+
+def login_with_access_token():
+    session = requests.session()
+    token = get_env_var('RC_API_ACCESS_TOKEN')
+    session.headers.update({'Authorization': f'Bearer {token}'})
+    url = 'https://www.recurse.com/api/v1/profiles/me'
+
+    r = session.get(url)
+    if r.status_code != requests.codes["200"]:
+        r.raise_for_status()
+
+    return login(r.json())
 
 
 @app.route('/auth/recurse/callback', methods=['GET', 'POST'])
@@ -96,18 +112,8 @@ def auth_recurse_callback():
             'error_description': request.args.get('error_description', '(no error description'),
         }), 403)
 
-    me = rc.get('people/me', token=token).json()
-    session['recurse_user_id'] = me['id']
-    session['recurse_user'] = {
-        'id': me['id'],
-        'first_name': me['first_name']
-    }
-
-    logging.info("Logged in: %s %s",
-                 me.get('first_name', ''),
-                 me.get('last_name', ''))
-
-    return redirect(url_for('index'))
+    me = rc.get('people/me', token).json()
+    return login(me)
 
 
 def is_logged_in():
@@ -126,7 +132,6 @@ def needs_authorization(route):
         elif 'recurse_user_id' in session:
             return route(*args, **kwargs)
         else:
-            print("Login required")
             return (jsonify({
                 'message': 'Login Required',
                 'status': 401
@@ -141,31 +146,34 @@ def get_current_user():
 
 
 def current_user():
-    print("Inside curr user")
     if 'recurse_user' in session:
-        print("recurse_user in session")
         return session['recurse_user']
-    if 'recurse_user_id' in session:
-        print("recurse_user_id in session")
+    elif 'recurse_user_id' in session:
         return {"id": session['recurse_user_id']}
     else:
-        print("Nothin in session")
         return {}
 
 
-@app.route('/auth/login')
-@needs_authorization
-def login():
-    print("Flask - Login")
-    return get_current_user()
+def login(me):
+    session['recurse_user_id'] = me['id']
+    session['recurse_user'] = {
+        'id': me['id'],
+        'first_name': me['first_name']
+    }
+
+    logging.info("Logged in: %s %s",
+                 me.get('first_name', ''),
+                 me.get('last_name', ''))
+    return redirect(url_for('index'))
 
 
 @app.route('/auth/logout')
 def logout():
-    print("Flask - Logout")
     session.pop('recurse_user_id', None)
     session.pop('recurse_user', None)
-    return 200
+    return jsonify({'message': "Logout successful",
+                    'status': 200
+                    }, 200)
 
 
 @app.route('/api/locations/public')
@@ -211,8 +219,6 @@ def get_rc_locations():
 @needs_authorization
 def get_rc_locations_with_people():
     cursor = connection.cursor()
-
-    print("All locations, curr user: ", current_user())
 
     # Query returns list of locations grouped in the format:
     # {
@@ -285,13 +291,10 @@ def locations_search():
 def get_location(id):
     cursor = connection.cursor()
 
-    print("Get location with id ", id, ", Logged in? ", is_logged_in())
-
     # If location is aliased to another location, find preferred location
     preferred_id = get_alias(cursor, id)
     if (preferred_id):
         id = preferred_id
-        print("Location aliased to ", id)
 
     # If geolocation data exists with people affiliated, return it
     location = get_geolocation_with_people(cursor, id)
