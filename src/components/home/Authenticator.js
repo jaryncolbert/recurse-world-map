@@ -6,23 +6,24 @@ import { getCurrentUser, login, logout } from "../../api";
 export default function withAuth(WrappedComponent) {
     return class Authenticator extends React.Component {
         currentUser = () => {
+            let user = {};
+
             getCurrentUser().then(result => {
-                return result;
+                user = result;
             });
 
-            return {};
+            return user;
         };
 
         isAuthenticated = () => {
             const currUser = this.currentUser();
-            const isAuthenticated = !!currUser["id"];
+            const isAuthenticated = !!currUser["first_name"];
 
-            const unauthenticatedMsg = "User is unauthenticated";
             const authMsg = isAuthenticated
                 ? `Authenticated as user ${currUser["id"]} - ${
                       currUser["first_name"]
                   }`
-                : unauthenticatedMsg;
+                : "User is unauthenticated";
             console.log(authMsg);
 
             return isAuthenticated;

@@ -103,9 +103,8 @@ def auth_recurse_callback():
         'first_name': me['first_name']
     }
 
-    logging.info("Logged in: %s %s %s",
+    logging.info("Logged in: %s %s",
                  me.get('first_name', ''),
-                 me.get('middle_name', ''),
                  me.get('last_name', ''))
 
     return redirect(url_for('index'))
