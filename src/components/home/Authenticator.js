@@ -50,7 +50,7 @@ export default function withAuth(WrappedComponent) {
                     checkAuthentication={this.authenticate}
                     logoutCallback={this.logout}
                     isAuthenticated={this.state.isAuthenticated}
-                    currUser={this.state.currentUser}
+                    currentUser={this.state.currentUser}
                 />
             );
         }
