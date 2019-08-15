@@ -100,8 +100,7 @@ def auth_recurse_callback():
     session['recurse_user_id'] = me['id']
     session['recurse_user'] = {
         'id': me['id'],
-        'first_name': me['first_name'],
-        'image_url': me['image_path']
+        'first_name': me['first_name']
     }
 
     logging.info("Logged in: %s %s %s",
@@ -131,8 +130,8 @@ def needs_authorization(route):
             print("Login required")
             return (jsonify({
                 'message': 'Login Required',
-                'status': 401
-            }), 401)
+                'status': 403
+            }), 403)
 
     return wrapped_route
 
@@ -159,7 +158,7 @@ def current_user():
 @needs_authorization
 def login():
     print("Flask - Login")
-    return redirect(url_for('index'))
+    return get_current_user()
 
 
 @app.route('/auth/logout')
@@ -167,7 +166,7 @@ def logout():
     print("Flask - Logout")
     session.pop('recurse_user_id', None)
     session.pop('recurse_user', None)
-    return redirect(url_for('index'))
+    return 200
 
 
 @app.route('/api/locations/public')
