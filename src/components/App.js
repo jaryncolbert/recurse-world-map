@@ -1,6 +1,6 @@
 import React from "react";
 import LeafletMap from "./map/LeafletMap";
-import Search from "./search/Search";
+import Navbar from "./Navbar";
 
 import { getRcLocations, getLocationData } from "../api";
 
@@ -111,7 +111,7 @@ export default class App extends React.Component {
     render() {
         return (
             <div className="App">
-                <Search
+                <Navbar
                     searchCompletedFn={this.setSelectedLocation}
                     clearInput={this.state.triggerClearInput}
                     onInputCleared={this.onInputCleared}

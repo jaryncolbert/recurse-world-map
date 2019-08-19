@@ -13,17 +13,15 @@ export default function Search({
     isLoading
 }) {
     return (
-        <div className="location-search container float-left">
-            <div className="row">
-                <LocationInput
-                    onSearchCompleted={searchCompletedFn}
-                    onInputCleared={onInputCleared}
-                    clearInput={clearInput}
-                    resetFn={resetFn}
-                />
-                <ResetButton resetFn={resetFn} />
-                <Spinner isLoading={isLoading} id="search-spinner"/>
-            </div>
-        </div>
+        <>
+            <LocationInput
+                onSearchCompleted={searchCompletedFn}
+                onInputCleared={onInputCleared}
+                clearInput={clearInput}
+                resetFn={resetFn}
+            />
+            <ResetButton resetFn={resetFn} />
+            <Spinner isLoading={isLoading} id="search-spinner" />
+        </>
     );
 }
