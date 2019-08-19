@@ -95,12 +95,12 @@ export default class LocationInput extends React.Component {
 
     render() {
         const inputProps = {
-            placeholder: "Enter a location",
+            placeholder: "Enter location",
             value: this.state.value,
             onChange: this.onChange
         };
         return (
-            <div className="location-input col-md-4">
+            <div className="location-input col-8 col-md-6">
                 <Autosuggest
                     suggestions={this.state.suggestions || []}
                     onSuggestionSelected={this.onSuggestionSelected}

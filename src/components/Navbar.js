@@ -6,10 +6,12 @@ import Search from "./search/Search";
 
 export default function Navbar({ ...props }) {
     return (
-        <nav className="navbar navbar-light navbar-expand-sm justify-content-sm-between">
+        <nav className="navbar navbar-light navbar-expand">
             <Link to="/" className="navbar-brand">
                 <img src={MapIcon} alt="RC Map Icon" />
-                World of Recurse Map
+                <span class="text-collapsible d-none d-md-inline">
+                    World of Recurse Map
+                </span>
             </Link>
             <Search {...props} />
         </nav>

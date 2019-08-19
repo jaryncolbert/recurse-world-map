@@ -13,7 +13,7 @@ export default function Search({
     isLoading
 }) {
     return (
-        <>
+        <div className="search-container input-group">
             <LocationInput
                 onSearchCompleted={searchCompletedFn}
                 onInputCleared={onInputCleared}
@@ -22,6 +22,6 @@ export default function Search({
             />
             <ResetButton resetFn={resetFn} />
             <Spinner isLoading={isLoading} id="search-spinner" />
-        </>
+        </div>
     );
 }
