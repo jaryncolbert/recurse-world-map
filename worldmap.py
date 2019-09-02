@@ -25,7 +25,7 @@ from flask import Flask, jsonify, redirect, request, send_from_directory, sessio
 from authlib.flask.client import OAuth
 from werkzeug.exceptions import HTTPException
 import psycopg2
-from geocode_locations import get_env_var, lookup_geodata, insert_geo_data, insert_alias
+from update_data import get_env_var, lookup_geodata, insert_geo_data, insert_alias
 
 
 # pylint: disable=invalid-name
@@ -334,8 +334,8 @@ def insert_location(cursor, location):
     ))
     cursor.execute("INSERT INTO locations" +
                    " (location_id, name, short_name)" +
-                   " VALUES (%s, %s, %s) " +
-                   " ON CONFLICT ON CONSTRAINT locations_pkey " +
+                   " VALUES (%s, %s, %s)" +
+                   " ON CONFLICT (location_id)" +
                    " DO NOTHING ",
                    [location.get('id'),
                     location.get('name'),

@@ -32,11 +32,11 @@ CREATE TABLE IF NOT EXISTS geolocations (
 
 CREATE TABLE IF NOT EXISTS location_affiliations (
   person_id INTEGER NOT NULL REFERENCES people (person_id),
-  location_id INTEGER NULL REFERENCES locations (location_id),
+  location_id INTEGER NOT NULL REFERENCES locations (location_id),
   start_date DATE NULL,
   end_date DATE NULL,
   affiliation_type TEXT NULL,
-  PRIMARY KEY (person_id, location_id)
+  PRIMARY KEY (person_id, affiliation_type)
 );
 
 CREATE TABLE IF NOT EXISTS stints (
