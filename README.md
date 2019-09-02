@@ -1,4 +1,4 @@
-# World of Recurse Map
+# World of Recurse
 
 Visualize the locations of members
 of the [Recurse Center](https://recurse.com) community
