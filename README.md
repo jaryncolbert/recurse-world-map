@@ -260,7 +260,7 @@ running at http://127.0.0.1:5000/.
 If you receive either of the following messages:
 
 ```sh
-File "./insert_rc_data.py", line 24
+File "./update_data.py", line 24
 headers = {'Authorization': f'Bearer {token}'}
                                                 ^
 SyntaxError: invalid syntax
