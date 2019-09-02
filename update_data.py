@@ -66,8 +66,7 @@ def insert_people_data(cursor, people):
     for person in people:
         person_id = person.get('id')
         name = person.get('name')
-        image_path = person.get('image_path')
-        image_url = image_path if ("no_photo" not in image_path) else None
+        image_url = person.get('image_path')
 
         logging.debug("Person #{}: {}".format(
             person_id,

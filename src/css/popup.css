@@ -1,36 +1,58 @@
 .leaflet-popup-content-wrapper {
-    width: 100%;
-    max-height: 60vh;
+  width: 100%;
+  max-height: 60vh;
 }
 
 .leaflet-popup-content {
-    flex: auto;
-    max-width: 30vw;
-    width: 100%;
+  flex: auto;
+  max-width: 30vw;
+  width: 400px;
 }
 
 .location-popup .location-name {
-    font-weight: bold;
-    font-size: 20px;
-    text-align: center;
+  font-weight: bold;
+  font-size: 20px;
+  text-align: center;
 }
 
 .location-popup .location-stats {
-    font-style: italic;
-    text-align: center;
+  font-style: italic;
+  text-align: center;
 }
 
 .leaflet-popup-content {
-    max-width: 90%;
-    max-height: 60%;
-    font-size: 16px;
-    margin: 1.5em;
+  max-width: 90%;
+  max-height: 60%;
+  font-size: 16px;
+  margin: 1.5em;
 }
 
 .leaflet-popup-content p {
-    margin: 1em;
+  margin: 1em;
 }
 
 .leaflet-popup-content ul {
-    padding-inline-start: 1.5em;
+  padding-inline-start: 1.5em;
+}
+
+.person-link {
+  color: black;
+  display: flex;
+  align-items: center;
+}
+
+.profile-photo {
+  height: calc(80px + 2vw);
+  width: calc(80px + 2vw);
+  margin-right: 0.5rem;
+}
+
+.profile-photo img {
+  border-radius: 50%;
+  object-fit: none;
+  height: 100%;
+  border: 1px solid lightgray;
+  background: white;
+  box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
 }

@@ -49,28 +49,35 @@ function People({ people }) {
   return (
     <>
       <p className="location-stats">{population + " " + recursers}</p>
-      <ul className="person-list">
-        {people.map(p => (
-          <Person key={p["person_id"]} person={p} />
-        ))}
-      </ul>
+      {people.map(p => (
+        <Person key={p["person_id"]} person={p} />
+      ))}
     </>
   );
 }
 
 function Person({ person }) {
   return (
-    <li>
-      <a
-        href={"https://www.recurse.com/directory/" + person["person_id"]}
-        target="_blank"
-        rel="noopener noreferrer">
-        {person["name"]}
-      </a>
-
-      <StintInfo stints={person["stints"]} />
-    </li>
+    <a
+      className="person-link"
+      href={"https://www.recurse.com/directory/" + person["person_id"]}
+      target="_blank"
+      rel="noopener noreferrer">
+      <Photo imageUrl={person["image_url"]} personName={person["name"]} />
+      <div className="person-info">
+        <span className="person-name">{person["name"]}</span>
+        <StintInfo stints={person["stints"]} />
+      </div>
+    </a>
   );
+}
+
+function Photo({ imageUrl, personName }) {
+  return imageUrl ? (
+    <div className="profile-photo">
+      <img src={imageUrl} alt={personName + " photo"} />
+    </div>
+  ) : null;
 }
 
 function StintInfo({ stints }) {
