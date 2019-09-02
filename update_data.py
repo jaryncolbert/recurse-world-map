@@ -360,9 +360,9 @@ def reconcile_duplicates(cursor):
         max_count = 0
 
         for i, loc in enumerate(counts):
-            pop = loc["population"]  # pop can be null
+            pop = loc["population"]
 
-            if (pop and pop > max_count):
+            if (pop > max_count):
                 max_count = pop
                 preferred_index = i
 
@@ -376,7 +376,7 @@ def reconcile_duplicates(cursor):
             # Update all people pointing to old location with new in location_affiliations
             update_location_affiliations(cursor, loc, preferred_loc)
 
-    logging.info('Duplicate locations removed')
+    logging.info('Duplicate locations reassigned')
 
 
 def get_location_counts(cursor):
@@ -388,15 +388,15 @@ def get_location_counts(cursor):
                                 'name', g.name, 
                                 'population', population
                             )
-                        ) as counts
+                        ) AS counts
                       FROM geolocations g
                       LEFT JOIN (
                           SELECT 
                             location_id, 
-                            count(person_id) as population
+                            COALESCE(COUNT(person_id), 0) AS population
                           FROM location_affiliations
                           GROUP BY location_id
-                        ) as p
+                        ) AS p
                       ON g.location_id = p.location_id
                       GROUP BY lat, lng HAVING count(*) > 1""")
 

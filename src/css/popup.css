@@ -35,6 +35,12 @@
   padding-inline-start: 1.5em;
 }
 
+.location-stats {
+  font-style: italic;
+  display: block;
+  text-align: center;
+}
+
 .person-link {
   color: black;
   display: flex;
