@@ -9,7 +9,7 @@ export default function Navbar({ ...props }) {
     <nav className="navbar navbar-light navbar-expand">
       <Link to="/" className="navbar-brand">
         <img src={MapIcon} alt="RC Map Icon" />
-        <span class="text-collapsible d-none d-md-inline">
+        <span className="text-collapsible d-none d-md-inline">
           World of Recurse
         </span>
       </Link>
