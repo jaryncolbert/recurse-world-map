@@ -161,12 +161,16 @@ def get_all_rc_locations_with_people():
     # {
     #   location_id:
     #   location_name:
+    #   type:
     #   lat:
     #   lng:
+    #   city_count:
+    #   population:
     #   person_list: [
     #     {
     #        person_id:
     #        person_name:
+    #        image_url:
     #        stints: [
     #          {
     #            stint_type:
@@ -184,18 +188,24 @@ def get_all_rc_locations_with_people():
     cursor.execute("""SELECT
                         location_id,
                         location_name,
+                        type,
                         lat,
                         lng,
+                        city_count, 
+                        total_population,
                         person_list
                       FROM geolocations_people_and_stints_agg""")
 
     locations = [{
         'location_id': x[0],
         'location_name': x[1],
-        'lat': x[2],
-        'lng': x[3],
+        'type': x[2],
+        'lat': x[3],
+        'lng': x[4],
+        'city_count': x[5],
+        'total_population': x[6],
         'has_rc_people': True,
-        'person_list': x[4]
+        'person_list': x[7]
     } for x in cursor.fetchall()]
     cursor.close()
 
@@ -240,6 +250,7 @@ def get_location(id):
     # Else lookup existing geolocation info, and then return it
     location = get_geolocation(cursor, id)
     if (location):
+        add_population_if_country(cursor, location)
         return jsonify(location)
 
     # Otherwise, create and insert new location
@@ -259,25 +270,19 @@ def get_location(id):
     connection.commit()
 
     # If there's an existing location in the db with the same lat/lng,
-    # return its geolocation instead and create an alias
+    # create an alias and use the alias' id for lookup
     geo = lookup_geodata(cursor, location)
     preferred_location = find_location_with_coords(cursor, geo)
     if (preferred_location):
         insert_alias(cursor, location, preferred_location)
-        return get_location(preferred_location["location_id"])
+        id = preferred_location["location_id"]
 
-    # Otherwise, insert new geolocation into database and return it
+    # Otherwise, insert new geolocation into database
     insert_geo_data(cursor, geo)
     connection.commit()
 
-    # Format geolocation data to only pull out relevant keys
-    return jsonify({
-        "location_id": geo["location_id"],
-        "location_name": geo["name"],
-        "lat": geo["lat"],
-        "lng": geo["lng"],
-        "has_rc_people": False
-    })
+    # Retrieve location by id now that db has been updated
+    return get_location(id)
 
 
 # Returns the id of the preferred location if this location
@@ -348,6 +353,7 @@ def get_geolocation(cursor, location_id):
     cursor.execute("""SELECT
                         location_id,
                         name,
+                        type,
                         lat,
                         lng
                       FROM geolocations
@@ -358,8 +364,9 @@ def get_geolocation(cursor, location_id):
     return {
         'location_id': x[0],
         'location_name': x[1],
-        'lat': x[2],
-        'lng': x[3],
+        'type': x[2],
+        'lat': x[3],
+        'lng': x[4],
         'has_rc_people': False
     } if x else {}
 
@@ -372,21 +379,52 @@ def get_geolocation_with_people(cursor, location_id):
     cursor.execute("""SELECT
                         location_id,
                         location_name,
+                        type,
                         lat,
                         lng,
+                        city_count, 
+                        total_population, 
                         person_list
                       FROM geolocations_people_and_stints_agg
                       WHERE location_id = %s""", [location_id])
     locations = [{
         'location_id': x[0],
         'location_name': x[1],
-        'lat': x[2],
-        'lng': x[3],
+        'type': x[2],
+        'lat': x[3],
+        'lng': x[4],
+        'city_count': x[5],
+        'total_population': x[6],
         'has_rc_people': True,
-        'person_list': x[4]
+        'person_list': x[7]
     } for x in cursor.fetchall()]
 
     return require_one(locations, location_id)
+
+
+def add_population_if_country(cursor, location):
+    if (location["type"] == 'city'):
+        return
+
+    location_id = location["location_id"]
+    logging.info("Select Country Population, ID #{}".format(
+        location_id
+    ))
+    """Returns the population and city counts for the country with the given id."""
+    cursor.execute("""SELECT
+                        location_id,
+                        city_count,
+                        total_population
+                      FROM geolocations_popl_by_country_agg
+                      WHERE location_id = %s""", [location_id])
+    locations = [{
+        'location_id': x[0],
+        'city_count': x[1],
+        'total_population': x[2]
+    } for x in cursor.fetchall()]
+
+    population_data = require_one(locations, location_id)
+    location.update(population_data)
 
 
 def require_one(location_arr, location_id):

@@ -64,12 +64,7 @@ export default class LocationMarker extends React.Component {
         className="location-marker"
         population={population}
         icon={circleIcon(population)}>
-        <LocationPopup
-          key={location["location_id"]}
-          locationName={location["location_name"]}
-          people={people}
-          hasPeople={hasPeople}
-        />
+        <LocationPopup key={location["location_id"]} location={location} />
       </Marker>
     );
   }

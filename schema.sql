@@ -56,9 +56,9 @@ CREATE VIEW stints_for_people AS
 SELECT
   stints.person_id,
   stints.stint_type,
-  stints.title as rc_title,
+  stints.title AS rc_title,
   stints.start_date,
-  batches.short_name as batch_name
+  batches.short_name AS batch_name
 FROM stints
 LEFT JOIN batches
   ON stints.batch_id = batches.batch_id
@@ -75,33 +75,37 @@ SELECT
         'start_date', start_date
     )
     ORDER BY start_date
-  ) as stints
+  ) AS stints
 FROM stints_for_people
 GROUP BY person_id;
            
-
 CREATE VIEW geolocations_with_affiliated_people AS
 SELECT
   l.location_id,
-  l.name as location_name,
+  l.name AS location_name,
   l.lat,
   l.lng,
+  l.country_code,
+  l.type,
   p.person_id,
-  p.name as person_name,
+  p.name AS person_name,
   p.image_url
 FROM geolocations l
-  INNER JOIN location_affiliations a
-    ON (a.location_id = l.location_id)
-  INNER JOIN people p
-    ON a.person_id = p.person_id
+INNER JOIN location_affiliations a
+  ON (a.location_id = l.location_id)
+INNER JOIN people p
+  ON a.person_id = p.person_id
 ORDER BY l.location_id;
 
 CREATE VIEW geolocations_people_and_stints_agg AS
 SELECT
-  location_id,
-  location_name,
-  lat,
-  lng,
+  g.location_id,
+  g.location_name,
+  g.type,
+  g.lat,
+  g.lng,
+  COALESCE(p.city_count, 0) AS city_count,
+  COALESCE(p.total_population, 0) AS total_population,
   json_agg(
       json_build_object(
           'person_id', g.person_id, 
@@ -110,9 +114,38 @@ SELECT
           'stints', stints
       )
       ORDER BY person_name
-  ) as person_list
-FROM geolocations_with_affiliated_people as g
-INNER JOIN stints_for_people_agg as s
-ON s.person_id = g.person_id
-GROUP BY location_id, location_name, lat, lng 
+  ) AS person_list
+FROM geolocations_with_affiliated_people AS g
+INNER JOIN stints_for_people_agg AS s
+  ON s.person_id = g.person_id
+LEFT JOIN geolocations_popl_by_country_agg p 
+  ON p.location_id = g.location_id
+GROUP BY g.location_id, g.location_name, g.type, g.lat, g.lng,
+  p.city_count, p.total_population
+ORDER BY g.location_id;
+
+CREATE VIEW geolocations_popl_by_country AS
+SELECT DISTINCT
+  a.location_id,
+  a.name AS country_name,
+  b.location_id AS sub_id, 
+  b.type AS sub_type,
+  b.location_name AS sub_name, 
+  COUNT(b.person_id) AS population
+FROM geolocations a
+INNER JOIN geolocations_with_affiliated_people b
+  ON a.country_code = b.country_code
+WHERE a.type = 'country' 
+GROUP BY a.location_id, a.name,
+  b.location_id, b.type, b.location_name
+ORDER BY a.location_id;
+
+CREATE VIEW geolocations_popl_by_country_agg AS
+SELECT 
+  location_id,
+  country_name,
+  COUNT(sub_id) FILTER (WHERE sub_type = 'city') AS city_count,
+  SUM(population::INTEGER) AS total_population
+FROM geolocations_popl_by_country
+GROUP BY location_id, country_name
 ORDER BY location_id;
