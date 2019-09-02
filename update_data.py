@@ -65,38 +65,26 @@ def insert_people_data(cursor, people):
 
     for person in people:
         person_id = person.get('id')
+        name = person.get('name')
         image_path = person.get('image_path')
         image_url = image_path if ("no_photo" not in image_path) else None
 
-        first_name = person.get('first_name')
-        middle_name = person.get('middle_name')
-        last_name = person.get('last_name')
-
-        logging.debug("Person #{}: {} {} {}".format(
+        logging.debug("Person #{}: {}".format(
             person_id,
-            first_name,
-            middle_name,
-            last_name
+            name
         ))
 
         cursor.execute("INSERT INTO people" +
-                       " (person_id, first_name, middle_name," +
-                       "  last_name, image_url)" +
-                       " VALUES (%s, %s, %s, %s, %s)" +
+                       " (person_id, name, image_url)" +
+                       " VALUES (%s, %s, %s)" +
                        " ON CONFLICT (person_id) DO UPDATE SET" +
-                       " first_name = %s," +
-                       " middle_name = %s," +
-                       " last_name = %s," +
+                       " name = %s," +
                        " image_url = %s" +
                        " WHERE people.person_id = %s",
                        [person_id,
-                        first_name,
-                        middle_name,
-                        last_name,
+                        name,
                         image_url,
-                        first_name,
-                        middle_name,
-                        last_name,
+                        name,
                         image_url,
                         person_id
                         ]

@@ -6,9 +6,7 @@ CREATE TABLE IF NOT EXISTS batches (
 
 CREATE TABLE IF NOT EXISTS people (
   person_id INTEGER PRIMARY KEY,
-  first_name TEXT NOT NULL,
-  middle_name TEXT NULL,
-  last_name TEXT NOT NULL,
+  name TEXT NOT NULL,
   image_url TEXT NULL
 );
 
@@ -89,8 +87,7 @@ SELECT
   l.lat,
   l.lng,
   p.person_id,
-  p.first_name,
-  p.last_name,
+  p.name as person_name,
   p.image_url
 FROM geolocations l
   INNER JOIN location_affiliations a
@@ -108,12 +105,11 @@ SELECT
   json_agg(
       json_build_object(
           'person_id', g.person_id, 
-          'first_name', first_name, 
-          'last_name', last_name,
+          'name', person_name, 
           'image_url', image_url,
           'stints', stints
       )
-      ORDER BY first_name
+      ORDER BY person_name
   ) as person_list
 FROM geolocations_with_affiliated_people as g
 INNER JOIN stints_for_people_agg as s

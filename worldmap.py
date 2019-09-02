@@ -97,10 +97,7 @@ def auth_recurse_callback():
         }), 403)
 
     me = rc.get('people/me', token=token).json()
-    logging.info("Logged in: %s %s %s",
-                 me.get('first_name', ''),
-                 me.get('middle_name', ''),
-                 me.get('last_name', ''))
+    logging.info("Logged in: %s", me.get('name', ''))
 
     session['recurse_user_id'] = me['id']
     return redirect(url_for('index'))
@@ -169,8 +166,7 @@ def get_all_rc_locations_with_people():
     #   person_list: [
     #     {
     #        person_id:
-    #        first_name:
-    #        last_name:
+    #        person_name:
     #        stints: [
     #          {
     #            stint_type:
@@ -293,7 +289,7 @@ def get_alias(cursor, location_id):
     logging.info("Select Alias for Location ID #{}".format(
         location_id
     ))
-    """Returns the preferred location alias for the location 
+    """Returns the preferred location alias for the location
         with the given id if an alias exists."""
     cursor.execute("""SELECT
                         preferred_location_id
