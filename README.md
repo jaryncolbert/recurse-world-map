@@ -163,10 +163,10 @@ An alternate database URL you might try is
 `postgres://localhost/worldmap`
 to connect over TCP/IP to the database named `worldmap`.
 
-The `update_data.py` script pulls RC profile data
-from the Recurse Center API,
-which also powers the [RC Directory](https://www.recurse.com/directory),
-and stores it in the database.
+There is a script
+to get the data the application needs
+from the Recurse Center API
+and store it in the database.
 To connect to the RC API,
 the script needs a personal access token,
 which you can create in the
@@ -176,33 +176,38 @@ so copy it to a safe place
 and add it to the `.env` file:
 `RC_API_ACCESS_TOKEN=<personal_access_token>`
 
-The script also geocodes the locations retrieved
-from the RC API
-using the [GeoNames database](https://www.geonames.org/).
+Run the script to populate the database
+with information from the RC API
+in your [Python Virtual Environment](#python-virtual-environment):
+
+```sh
+(venv)$ ./insert_rc_data.py
+```
+
+It should print out how many people and locations were added.
+
+Next, another script geocodes the locations retrieved
+from the `insert_rc_data.py` script
+using the [GeoNames database](https://www.geonames.org/)
 To connect to GeoNames,
-the script needs a registered GeoNames username,
+the script needs a personal access token,
 which you can create
 on the [GeoNames login page](http://www.geonames.org/login).
 Add your username
 to the `.env` file:
 `GEONAMES_USERNAME=<username>`
 
-Run the script to populate the database
-in your [Python Virtual Environment](#python-virtual-environment):
+Then, run the script to geocode the locations
+that were added by the last script:
 
 ```sh
-(venv)$ ./update_data.py
+(venv)$ ./geocode_locations.py
 ```
-
-It should print out
-how many people, locations, batches, and stints
-were added.
 
 **Note**: GeoNames rate limits the number
 of requests per second
 that can be delivered to a single app,
-so this script can take a long time to complete,
-especially on an empty database.
+so this script can take a long time to complete.
 The script will display informational messages
 when it retrieves lat/lng results
 for each location
