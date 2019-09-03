@@ -28,7 +28,8 @@
 }
 
 .leaflet-popup-content p {
-  margin: 1em;
+  margin-top: 0rem;
+  margin-bottom: 0.3rem;
 }
 
 .leaflet-popup-content ul {
