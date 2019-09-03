@@ -97,6 +97,32 @@ INNER JOIN people p
   ON a.person_id = p.person_id
 ORDER BY l.location_id;
 
+CREATE VIEW geolocations_popl_by_country AS
+SELECT DISTINCT
+  a.location_id,
+  a.name AS country_name,
+  b.location_id AS sub_id, 
+  b.type AS sub_type,
+  b.location_name AS sub_name, 
+  COUNT(b.person_id) AS population
+FROM geolocations a
+INNER JOIN geolocations_with_affiliated_people b
+  ON a.country_code = b.country_code
+WHERE a.type = 'country' 
+GROUP BY a.location_id, a.name,
+  b.location_id, b.type, b.location_name
+ORDER BY a.location_id;
+
+CREATE VIEW geolocations_popl_by_country_agg AS
+SELECT 
+  location_id,
+  country_name,
+  COUNT(sub_id) FILTER (WHERE sub_type = 'city') AS city_count,
+  SUM(population::INTEGER) AS total_population
+FROM geolocations_popl_by_country
+GROUP BY location_id, country_name
+ORDER BY location_id;
+
 CREATE VIEW geolocations_people_and_stints_agg AS
 SELECT
   g.location_id,
@@ -123,29 +149,3 @@ LEFT JOIN geolocations_popl_by_country_agg p
 GROUP BY g.location_id, g.location_name, g.type, g.lat, g.lng,
   p.city_count, p.total_population
 ORDER BY g.location_id;
-
-CREATE VIEW geolocations_popl_by_country AS
-SELECT DISTINCT
-  a.location_id,
-  a.name AS country_name,
-  b.location_id AS sub_id, 
-  b.type AS sub_type,
-  b.location_name AS sub_name, 
-  COUNT(b.person_id) AS population
-FROM geolocations a
-INNER JOIN geolocations_with_affiliated_people b
-  ON a.country_code = b.country_code
-WHERE a.type = 'country' 
-GROUP BY a.location_id, a.name,
-  b.location_id, b.type, b.location_name
-ORDER BY a.location_id;
-
-CREATE VIEW geolocations_popl_by_country_agg AS
-SELECT 
-  location_id,
-  country_name,
-  COUNT(sub_id) FILTER (WHERE sub_type = 'city') AS city_count,
-  SUM(population::INTEGER) AS total_population
-FROM geolocations_popl_by_country
-GROUP BY location_id, country_name
-ORDER BY location_id;
