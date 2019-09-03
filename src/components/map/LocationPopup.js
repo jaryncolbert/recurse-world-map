@@ -67,7 +67,7 @@ function CountryStats({ totalPopulation, cityCount, people, locationName }) {
     </a>
   );
 
-  if (people.length > 0) {
+  if (people.length > 0 && people.length !== totalPopulation) {
     stats.push(
       <div key="2">
         {`Of those, ${people.length} specifically set their location to ${locationName}.`}
