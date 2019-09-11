@@ -360,9 +360,9 @@ def reconcile_duplicates(cursor):
         max_count = 0
 
         for i, loc in enumerate(counts):
-            pop = loc["population"]
+            pop = loc["population"]  # pop can be null
 
-            if (pop > max_count):
+            if (pop and pop > max_count):
                 max_count = pop
                 preferred_index = i
 
