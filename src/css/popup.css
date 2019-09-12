@@ -46,20 +46,24 @@
   color: black;
   display: flex;
   align-items: center;
+  margin-top: 0.3rem;
+}
+
+.person-info {
+  max-width: 65%;
 }
 
 .profile-photo {
-  height: calc(80px + 2vw);
-  width: calc(80px + 2vw);
-  margin-right: 0.5rem;
-}
-
-.profile-photo img {
+  height: 80px;
+  width: 80px;
   border-radius: 50%;
-  object-fit: none;
-  height: 100%;
+  margin-right: 0.5rem;
+  overflow: hidden;
   border: 1px solid lightgray;
   background: white;
   box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.03);
-  overflow: hidden;
+}
+
+.profile-photo img {
+  transform: scale(0.6) translate(-40%, -40%);
 }

@@ -27,6 +27,7 @@ participated in code reviews, and
 generally made the app much, much better
 (listed alphabetically by first name):
 
--   [Jaryn Colbert](https://github.com/jaryncolbert)
--   [Jason Owen](https://github.com/jasonaowen)
--   [Winston Smith](https://github.com/sequentialchaos)
+- [Douglas Lerner](https://github.com/DouglasDev)
+- [Jaryn Colbert](https://github.com/jaryncolbert)
+- [Jason Owen](https://github.com/jasonaowen)
+- [Winston Smith](https://github.com/sequentialchaos)
