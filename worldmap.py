@@ -96,11 +96,28 @@ def auth_recurse_callback():
             'error_description': request.args.get('error_description', '(no error description'),
         }), 403)
 
-    me = rc.get('people/me', token=token).json()
+    me = get_rc_profile()
     logging.info("Logged in: %s", me.get('name', ''))
 
-    session['recurse_user_id'] = me['id']
     return redirect(url_for('index'))
+
+
+def get_rc_profile():
+    "Return the RC API information for the currently logged in user"
+
+    headers = {'Authorization': f'Bearer {token}'}
+    url = 'https://www.recurse.com/api/v1/profiles/me'
+
+    r = requests.get(url, headers=headers)
+    if r.status_code != requests.codes['ok']:
+        r.raise_for_status()
+
+    me = r.json()
+    session['recurse_user_id'] = me.get('id', '')
+    session['recurse_user_name'] = me.get('name', '')
+    session['recurse_user_image'] = me.get('image_path', '')
+
+    return me
 
 
 def needs_authorization(route):
@@ -191,7 +208,7 @@ def get_all_rc_locations_with_people():
                         type,
                         lat,
                         lng,
-                        city_count, 
+                        city_count,
                         total_population,
                         person_list
                       FROM geolocations_people_and_stints_agg""")
@@ -284,6 +301,20 @@ def get_location(id):
     # Retrieve location by id now that db has been updated
     return get_location(id)
 
+
+@app.route('/api/me/')
+@needs_authorization
+def get_current_user():
+    "Return the name and image for the currently logged in user"
+
+    if not 'recurse_user_name' in session:
+        me = get_rc_profile()
+
+    return jsonify({
+        'person_id': session.get('recurse_user_id', ''),
+        'name': session.get('recurse_user_name', ''),
+        'image_url': session.get('recurse_user_image', '')
+    })
 
 # Returns the id of the preferred location if this location
 # has an alias (e.g. "Manhattan, NY" -> "New York City, NY").
@@ -382,8 +413,8 @@ def get_geolocation_with_people(cursor, location_id):
                         type,
                         lat,
                         lng,
-                        city_count, 
-                        total_population, 
+                        city_count,
+                        total_population,
                         person_list
                       FROM geolocations_people_and_stints_agg
                       WHERE location_id = %s""", [location_id])
