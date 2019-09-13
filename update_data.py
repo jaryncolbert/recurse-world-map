@@ -202,7 +202,8 @@ def add_geolocation(cursor):
             insert_geo_data(cursor, geo)
 
         logging.info('Inserted %s locations', no_geo_count)
-        reconcile_duplicates(cursor)
+
+    reconcile_duplicates(cursor)
 
 
 def lookup_geodata(cursor, location):
