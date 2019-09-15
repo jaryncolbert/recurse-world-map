@@ -2,6 +2,7 @@ import React from "react";
 import L from "leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import LocationMarker from "./LocationMarker";
+import { populationToRadius, populationToSize } from "./RadiusUtil";
 
 export default class LocationClusterGroup extends React.Component {
     state = {
@@ -33,12 +34,14 @@ export default class LocationClusterGroup extends React.Component {
             selected,
             fitBoundsFn,
             padding,
+            maxZoom,
             ...otherProps
         } = this.props;
         return (
             <MarkerClusterGroup
                 ref="clusterGroupRef"
-                disableClusteringAtZoom={11}
+                maxClusterRadius="42"
+                disableClusteringAtZoom={maxZoom}
                 spiderfyOnMaxZoom={false}
                 onClusterClick={cluster => cluster.zoomToBounds(padding)}
                 {...otherProps}
@@ -78,34 +81,6 @@ export default class LocationClusterGroup extends React.Component {
         });
     };
 
-    getPropsForSize = size => {
-        const numToRadius = {
-            10: {
-                radius: 40,
-                class: "sm"
-            },
-            20: {
-                radius: 50,
-                class: "md"
-            },
-            100: {
-                radius: 70,
-                class: "lg"
-            },
-            300: {
-                radius: 90,
-                class: "xl"
-            },
-            5000: {
-                radius: 110,
-                class: "xxl"
-            }
-        };
-        // Find the first key that is greater than the original size
-        const pop = Object.keys(numToRadius).filter(n => n > size)[0];
-        return numToRadius[pop];
-    };
-
     clusterGroupIcon = cluster => {
         const markers = cluster.getAllChildMarkers();
         const totalPopulation = markers.reduce((sum, marker) => {
@@ -115,17 +90,18 @@ export default class LocationClusterGroup extends React.Component {
             return sum;
         }, 0);
 
-        const props = this.getPropsForSize(totalPopulation);
+        const innerRadius = populationToRadius(totalPopulation);
+        const outerRadius = innerRadius + 10;
+        const size = populationToSize(totalPopulation);
         const html = totalPopulation !== 0 ? totalPopulation : "";
 
         return L.divIcon({
-            html: `<div><span>${html}</span></div>`,
-            iconSize: [props["radius"], props["radius"]],
-            iconAnchor: [props["radius"] / 2, props["radius"] / 2],
+            html: `<div style="height: ${innerRadius}px; width: ${innerRadius}px;"><span>${html}</span></div>`,
+            iconSize: [outerRadius, outerRadius],
+            iconAnchor: [outerRadius / 2, outerRadius / 2],
             popupAnchor: [0, 0],
             shadowSize: [0, 0],
-            className:
-                "marker-cluster circle-cluster circle-cluster-" + props["class"]
+            className: "marker-cluster circle-cluster circle-cluster-" + size
         });
     };
 }
