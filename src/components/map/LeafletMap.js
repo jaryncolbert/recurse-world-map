@@ -51,6 +51,8 @@ export default class LeafletMap extends React.Component {
 
     render() {
         const { locations, selected, isLoading, ...otherProps } = this.props;
+        const maxZoom = 11;
+
         return isLoading ? (
             <Spinner isLoading={isLoading} id="map-spinner" />
         ) : (
@@ -59,7 +61,7 @@ export default class LeafletMap extends React.Component {
                 ref="mapRef"
                 viewport={this.DEFAULT_VIEWPORT}
                 zoomSnap="0.2"
-                maxZoom={11}>
+                maxZoom={maxZoom}>
                 <TileLayer
                     attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -67,7 +69,7 @@ export default class LeafletMap extends React.Component {
                 <LocationClusterGroup
                     fitBoundsTriggered={this.state.fitBoundsTriggered}
                     fitBoundsFn={this.fitBounds}
-                    maxClusterRadius="45"
+                    maxZoom={maxZoom}
                     locations={locations}
                     selected={selected}
                     padding={this.DEFAULT_PADDING}
