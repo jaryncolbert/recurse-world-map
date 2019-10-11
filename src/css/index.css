@@ -66,12 +66,6 @@ ul.navbar-nav {
     z-index: 999;
 }
 
-.footer-container {
-    height: 100%;
-    width: auto;
-    text-align: center;
-    margin: auto;
-}
 .footer-container a img {
     margin-left: 0.5em;
     margin-right: 0.5em;
