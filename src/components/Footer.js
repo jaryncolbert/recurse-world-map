@@ -3,7 +3,7 @@ import GitHubLogo from "../assets/GitHub-Mark-32px.png";
 
 export default function Footer() {
   return (
-    <footer className="footer mt-auto py-2 d-none d-lg-block">
+    <footer className="footer mt-auto py-2">
       <div className="footer-container container-fluid">
         <a
           href="http://www.recurse.com"
