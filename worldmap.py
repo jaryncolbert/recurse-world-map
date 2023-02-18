@@ -22,7 +22,7 @@ import logging
 from functools import wraps
 import requests
 from flask import Flask, jsonify, redirect, request, send_from_directory, session, url_for
-from authlib.flask.client import OAuth
+from authlib.integrations.flask_client import OAuth
 from werkzeug.exceptions import HTTPException
 import psycopg2
 from update_data import get_env_var, lookup_geodata, insert_geo_data, insert_alias
