@@ -3,10 +3,10 @@ astroid==1.6.6
 Authlib==0.10
 autopep8==1.4.4
 certifi==2019.3.9
-cffi==1.12.2
+cffi==1.15.1
 chardet==3.0.4
 Click==7.0
-cryptography==2.6.1
+cryptography==39.0.1
 decorator==4.4.0
 Flask==1.0.2
 future==0.17.1
@@ -20,10 +20,10 @@ Jinja2==2.10.1
 lazy-object-proxy==1.4.1
 MarkupSafe==1.1.1
 mccabe==0.6.1
-psycopg2==2.7.7
+psycopg2==2.9.5
 pycodestyle==2.5.0
 pycparser==2.19
-pylint==1.9.5
+pylint==1.9.4
 python-dotenv==0.10.1
 ratelim==0.1.6
 requests==2.21.0
