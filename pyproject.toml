@@ -1,0 +1,15 @@
+[project]
+name = "world-of-recurse-map"
+version = "1.1.0"
+description = "Visualize the locations of members of the Recurse Center community on an interactive map"
+authors = [
+    {name = "Jaryn Colbert", email = "jaryn.colbert@gmail.com"},
+    {name = "Jason Owen", email = "jason@jasonaowen.net"}
+]
+license = {file = "LICENSE"}
+readme = "README.md"
+requires-python = ">=3.11"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
