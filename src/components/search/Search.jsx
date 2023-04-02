@@ -10,7 +10,8 @@ export default function Search({
     onInputCleared,
     clearInput,
     resetFn,
-    isLoading
+    isLoading,
+    getLocationSuggestions
 }) {
     return (
         <div className="search-container input-group">
@@ -19,6 +20,7 @@ export default function Search({
                 onInputCleared={onInputCleared}
                 clearInput={clearInput}
                 resetFn={resetFn}
+                getLocationSuggestions={getLocationSuggestions}
             />
             <ResetButton resetFn={resetFn} />
             <Spinner isLoading={isLoading} id="search-spinner" />

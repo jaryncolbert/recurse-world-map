@@ -67,3 +67,15 @@
 .profile-photo img {
   transform: scale(0.6) translate(-40%, -40%);
 }
+
+.navbar .profile-photo {
+    height: 40px;
+    width: 40px;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.03);
+    margin-left: auto;
+    margin-right: 0px;
+}
+
+.navbar .profile-photo img {
+    transform: scale(0.3) translate(-120%, -120%);
+  }

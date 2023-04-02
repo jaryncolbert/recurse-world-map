@@ -11,6 +11,7 @@ cryptography==39.0.1
 decorator==5.1.1
 dill==0.3.6
 Flask==2.2.3
+Flask-Cors==3.0.10
 future==0.18.3
 geocoder==1.38.1
 geographiclib==2.0
