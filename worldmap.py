@@ -22,6 +22,7 @@ import logging
 from functools import wraps
 import requests
 from flask import Flask, jsonify, redirect, request, send_from_directory, session, url_for
+from flask_cors import CORS
 from authlib.integrations.flask_client import OAuth
 from werkzeug.exceptions import HTTPException
 import psycopg2
@@ -30,6 +31,7 @@ from update_data import get_env_var, lookup_geodata, insert_geo_data, insert_ali
 
 # pylint: disable=invalid-name
 app = Flask(__name__, static_url_path='/build')
+CORS(app)
 app.secret_key = get_env_var('FLASK_SECRET_KEY', 'development')
 
 logging.basicConfig(level=logging.INFO)
@@ -116,6 +118,7 @@ def get_rc_profile():
     session['recurse_user_id'] = me.get('id', '')
     session['recurse_user_name'] = me.get('name', '')
     session['recurse_user_image'] = me.get('image_path', '')
+    session['recurse_user_location'] = me.get('current_location', {}).get('name', '')
 
     return me
 
@@ -313,7 +316,8 @@ def get_current_user():
     return jsonify({
         'person_id': session.get('recurse_user_id', ''),
         'name': session.get('recurse_user_name', ''),
-        'image_url': session.get('recurse_user_image', '')
+        'image_url': session.get('recurse_user_image', ''),
+        'current_location': session.get('recurse_user_location', '')
     })
 
 # Returns the id of the preferred location if this location

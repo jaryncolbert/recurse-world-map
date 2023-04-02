@@ -2,8 +2,6 @@ import React from "react";
 import { throttle, debounce } from "throttle-debounce";
 import Autosuggest from "react-autosuggest";
 
-import { getLocationSuggestions } from "../../api";
-
 export default class LocationInput extends React.Component {
     constructor(props) {
         super(props);
@@ -27,7 +25,7 @@ export default class LocationInput extends React.Component {
     autocompleteSearch = q => {
         this.waitingFor = q;
 
-        getLocationSuggestions(q).then(result => {
+        this.props.getLocationSuggestions(q).then(result => {
             if (q === this.waitingFor) {
                 let _suggestions = [];
                 let i;
