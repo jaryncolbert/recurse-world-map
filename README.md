@@ -233,7 +233,7 @@ in your [Python Virtual Environment](#python-virtual-environment):
 
 Now, your local instance of Recurse Faces
 with live data from the RC API
-will be available at http://127.0.0.1:5000/:
+will be available at http://127.0.0.1:5001/:
 
 However, because this instance is running
 with statically generated resources from `npm build`,
@@ -253,7 +253,7 @@ $ npm run start
 Now, the React front end reflecting any local code changes
 will be running at http://localhost:3000/
 with data from the Flask back end API
-running at http://127.0.0.1:5000/.
+running at http://127.0.0.1:5001/.
 
 ## Troubleshooting
 
