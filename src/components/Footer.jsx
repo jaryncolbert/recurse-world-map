@@ -14,11 +14,13 @@ export default function Footer() {
             height="12px"
           />
         </a>
-        <span className="divider">|</span>
-        <a href="https://github.com/jaryncolbert/recurse-world-map">
-          <img src={GitHubLogo} alt="Github logo" height="16px" />
-          Fork on GitHub
-        </a>
+        <span className="github-link">
+            <span className="divider">|</span>
+            <a href="https://github.com/jaryncolbert/recurse-world-map">
+            <img src={GitHubLogo} alt="Github logo" height="16px" />
+            Fork on GitHub
+            </a>
+        </span>
       </div>
     </footer>
   );
