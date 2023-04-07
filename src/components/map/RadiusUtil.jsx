@@ -1,16 +1,20 @@
 export const populationToRadius = population => {
     const baseRadius = 20; // This radius is for a population of 1
+    const MIN_RADIUS = 14;
+    const MAX_RADIUS = 90;
 
     /**
      * Use base population area to find proportional
      * area and radius for new population
      */
     const popMultiplier = Math.sqrt(population) * baseRadius;
+
     /**
      * Scale value so that min and max values are bounded.
      * Max cluster population is around ~950 with a max radius of ~150
      */
-    return Math.floor(popMultiplier / 5 + 14);
+    const scaledValue = Math.floor(popMultiplier / 5 + 10);
+    return Math.min(MAX_RADIUS, Math.max(MIN_RADIUS, scaledValue));
 };
 
 export const populationToSize = population => {

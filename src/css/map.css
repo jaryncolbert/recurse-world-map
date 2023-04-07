@@ -41,14 +41,14 @@
 .circle-cluster-md div,
 .circle-icon-lg div,
 .circle-cluster-lg div {
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .circle-icon-xl div,
 .circle-cluster-xl div,
 .circle-icon-xxl div,
 .circle-cluster-xxl div {
-    font-size: 18px;
+    font-size: 14px;
 }
 
 #map-spinner-container {
