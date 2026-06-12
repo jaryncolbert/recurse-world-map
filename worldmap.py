@@ -46,7 +46,6 @@ rc = OAuth(app).register(
 )
 
 connection = psycopg2.connect(get_env_var('DATABASE_URL'))
-token = get_env_var('RC_API_ACCESS_TOKEN')
 
 
 @app.route('/')
@@ -82,10 +81,11 @@ def auth_recurse_redirect():
 
 @app.route('/auth/recurse/callback', methods=['GET', 'POST'])
 def auth_recurse_callback():
+
     "Process the results of a successful OAuth2 authentication"
 
     try:
-        token = rc.authorize_access_token()
+        rc_token = rc.authorize_access_token()
     except HTTPException:
         logging.error(
             'Error %s parsing OAuth2 response: %s',
@@ -98,16 +98,16 @@ def auth_recurse_callback():
             'error_description': request.args.get('error_description', '(no error description'),
         }), 403)
 
-    me = get_rc_profile()
+    me = get_rc_profile(rc_token)
     logging.info("Logged in: %s", me.get('name', ''))
 
     return redirect(url_for('index'))
 
 
-def get_rc_profile():
+def get_rc_profile(rc_token):
     "Return the RC API information for the currently logged in user"
 
-    headers = {'Authorization': f'Bearer {token}'}
+    headers = {'Authorization': f'Bearer {rc_token}'}
     url = 'https://www.recurse.com/api/v1/profiles/me'
 
     r = requests.get(url, headers=headers)
@@ -240,12 +240,11 @@ def locations_search():
     if (q == ""):
         return jsonify(suggestions)
 
-    headers = {'Authorization': f'Bearer {token}'}
     url = 'https://www.recurse.com/api/v1/locations?limit={limit}&query={query}'
     limit = 10
 
     r = requests.get(url.format(
-        limit=limit, query=q), headers=headers)
+        limit=limit, query=q))
     if r.status_code != requests.codes['ok']:
         r.raise_for_status()
     suggestions = r.json()
@@ -309,9 +308,6 @@ def get_location(id):
 @needs_authorization
 def get_current_user():
     "Return the name and image for the currently logged in user"
-
-    if not 'recurse_user_name' in session:
-        me = get_rc_profile()
 
     return jsonify({
         'person_id': session.get('recurse_user_id', ''),
