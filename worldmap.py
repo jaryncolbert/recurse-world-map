@@ -107,7 +107,7 @@ def auth_recurse_callback():
 def get_rc_profile(rc_token):
     "Return the RC API information for the currently logged in user"
 
-    headers = {'Authorization': f'Bearer {rc_token}'}
+    headers = {'Authorization': f'Bearer {rc_token["access_token"]}'}
     url = 'https://www.recurse.com/api/v1/profiles/me'
 
     r = requests.get(url, headers=headers)
